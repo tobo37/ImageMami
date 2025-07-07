@@ -11,7 +11,11 @@ const messages = {
       choose: 'Choose folder & scan',
       scanning: 'Scanning…',
     },
-    import: { title: 'Import' },
+    import: {
+      title: 'Import',
+      choose: 'Choose destination',
+      destination: 'Destination:'
+    },
     sort: { title: 'Sort' },
     blackhole: { title: 'Blackhole' },
   },
@@ -21,7 +25,11 @@ const messages = {
       choose: 'Ordner auswählen & scannen',
       scanning: 'Scanne…',
     },
-    import: { title: 'Importieren' },
+    import: {
+      title: 'Importieren',
+      choose: 'Ziel wählen',
+      destination: 'Ziel:'
+    },
     sort: { title: 'Sortieren' },
     blackhole: { title: 'Schwarzes Loch' },
   },

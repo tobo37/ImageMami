@@ -1,18 +1,16 @@
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { open } from '@tauri-apps/plugin-dialog'
+import { open }   from '@tauri-apps/plugin-dialog'
 import { invoke } from '@tauri-apps/api/core'
-import { useI18n } from 'vue-i18n'
 
-interface Device {
-  name: string
-  path: string
-  total: number
-}
+import DestinationSelector from './DestinationSelector.vue'
+import DeviceCard           from './DeviceCard.vue'
 
-const destPath = ref<string | null>(null)
-const devices  = ref<Device[]>([])
-const { t } = useI18n()
+interface Device { name: string; path: string; total: number }
+
+const destPath  = ref<string | null>(null)
+const devices   = ref<Device[]>([])
 
 onMounted(() => {
   destPath.value = localStorage.getItem('importDest')
@@ -33,44 +31,67 @@ async function loadDevices () {
 
 async function copyDevice (path: string) {
   if (!destPath.value) return
-  await invoke('import_device', {
-    devicePath: path,
-    destPath: destPath.value
-  })
+  await invoke('import_device', { devicePath: path, destPath: destPath.value })
 }
 
 function formatSize (bytes: number) {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  let size = bytes
-  let i = 0
-  while (size >= 1024 && i < units.length - 1) {
-    size /= 1024
-    i++
-  }
+  const units = ['B','KB','MB','GB','TB']
+  let size = bytes, i = 0
+  while (size >= 1024 && i < units.length - 1) { size /= 1024; i++ }
   return `${size.toFixed(1)} ${units[i]}`
 }
 </script>
 
 <template>
-  <div class="view">
-    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-      <strong>{{ t('import.destination') }}</strong>
-      <span>{{ destPath || '-' }}</span>
-      <button @click="chooseDest">{{ t('import.choose') }}</button>
-    </div>
-    <div style="margin-bottom: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <strong>{{ t('import.devices') }}</strong>
-        <button @click="loadDevices">{{ t('import.refresh') }}</button>
+  <div class="view import-view">
+    <!-- Zielordner auswählen -->
+    <DestinationSelector
+      :path="destPath"
+      :label="$t('import.destination')"
+      :choose-text="$t('import.choose')"
+      @choose="chooseDest" />
+
+    <!-- Geräte-Liste -->
+    <section>
+      <header class="section-header">
+        <h2>{{ $t('import.devices') }}</h2>
+        <button class="btn ghost" @click="loadDevices">
+          <span class="icon-rotate-cw" /> {{ $t('import.refresh') }}
+        </button>
+      </header>
+
+      <div v-if="devices.length" class="devices-grid">
+        <DeviceCard
+          v-for="d in devices"
+          :key="d.path"
+          :device="d"
+          :disabled="!destPath"
+          :copy-text="$t('import.copy')"
+          :format-size="formatSize"
+          @import="copyDevice" />
       </div>
-      <ul v-if="devices.length" style="margin-top: 0.5rem;">
-        <li v-for="d in devices" :key="d.path" style="display: flex; align-items: center; gap: 0.5rem;">
-          <span>{{ d.name }} ({{ formatSize(d.total) }}) - {{ d.path }}</span>
-          <button @click="copyDevice(d.path)" :disabled="!destPath">{{ t('import.copy') }}</button>
-        </li>
-      </ul>
-      <span v-else>-</span>
-    </div>
-    <h1>{{ t('import.title') }}</h1>
+
+      <p v-else class="placeholder">-</p>
+    </section>
   </div>
 </template>
+
+<style scoped>
+.import-view { display: flex; flex-direction: column; gap: 2rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .75rem;
+}
+.devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+.placeholder { opacity: .6; }
+.btn.ghost {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+.icon-rotate-cw::before { content: '⟳'; } /* simple icon-stub */
+</style>

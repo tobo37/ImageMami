@@ -1,0 +1,50 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+interface Device {
+  name: string
+  path: string
+  total: number
+}
+
+const props = defineProps<{
+  device: Device
+  disabled: boolean
+  copyText: string
+  formatSize: (bytes: number) => string
+}>()
+
+const emit  = defineEmits<{ import: [path: string] }>()
+const icon  = computed(() => {
+  const n = props.device.name.toLowerCase()
+  if (n.includes('sd') || n.includes('usb')) return '💾'
+  return '🗄️'
+})
+function onCopy () { emit('import', props.device.path) }
+</script>
+
+<template>
+  <div class="card device-card">
+    <div class="device-header">
+      <span class="device-icon">{{ icon }}</span>
+      <strong class="device-name">{{ props.device.name }}</strong>
+    </div>
+
+    <p class="device-path">{{ props.device.path }}</p>
+    <p class="device-size">{{ props.formatSize(props.device.total) }}</p>
+
+    <button class="btn w-full" :disabled="disabled" @click="onCopy">
+      {{ copyText }}
+    </button>
+  </div>
+</template>
+
+<style scoped>
+.device-card { display: flex; flex-direction: column; gap: .75rem; }
+.device-header { display: flex; align-items: center; gap: .5rem; }
+.device-icon { font-size: 1.4rem; }
+.device-name { flex: 1; text-transform: none; }
+.device-path { font-size: .8rem; opacity: .8; word-break: break-all; }
+.device-size { font-size: .9rem; }
+.w-full { width: 100%; }
+</style>

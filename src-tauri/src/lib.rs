@@ -1,7 +1,13 @@
 use serde::Serialize;
-use std::{collections::HashMap, fs::File, io::{BufReader, Read}, path::PathBuf};
-use walkdir::WalkDir;          // rekursives Traversieren ³
-use blake3::Hasher;            // schneller Hash ²
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufReader, Read},
+    path::PathBuf,
+};
+use walkdir::WalkDir; // rekursives Traversieren ³
+use blake3::Hasher; // schneller Hash ²
+use tauri::{Manager, Window};
 
 #[derive(Serialize)]
 struct DuplicateGroup {
@@ -11,10 +17,10 @@ struct DuplicateGroup {
 
 /// Schwergewichtige Arbeit in eigenen Thread auslagern
 #[tauri::command]
-async fn scan_folder(path: String) -> Result<Vec<DuplicateGroup>, String> {
+async fn scan_folder(window: Window, path: String) -> Result<Vec<DuplicateGroup>, String> {
     println!("recive path {path}");
     let duplicates = tauri::async_runtime::spawn_blocking(move || {
-        heavy_scan(PathBuf::from(path))
+        heavy_scan(PathBuf::from(path), window)
     })
     .await
     .map_err(|e| e.to_string())??;
@@ -22,18 +28,22 @@ async fn scan_folder(path: String) -> Result<Vec<DuplicateGroup>, String> {
 }
 
 /// echte Scan-Routine
-fn heavy_scan(root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
+fn heavy_scan(root: PathBuf, window: Window) -> Result<Vec<DuplicateGroup>, String> {
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
-    for entry in WalkDir::new(&root)
+    let files: Vec<PathBuf> = WalkDir::new(&root)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
-    {
-        let path = entry.path().to_path_buf();
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    let total = files.len();
+
+    for (idx, path) in files.into_iter().enumerate() {
         let mut reader = BufReader::new(File::open(&path).map_err(|e| e.to_string())?);
 
-        let mut hasher = Hasher::new();           // BLAKE3
+        let mut hasher = Hasher::new(); // BLAKE3
         let mut buf = [0u8; 8192];
         loop {
             let n = reader.read(&mut buf).map_err(|e| e.to_string())?;
@@ -41,11 +51,26 @@ fn heavy_scan(root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
             hasher.update(&buf[..n]);
         }
         let hash_hex = hasher.finalize().to_hex().to_string();
-        map.entry(hash_hex).or_default().push(path.display().to_string());
+        let entry = map.entry(hash_hex.clone()).or_default();
+        entry.push(path.display().to_string());
+
+        // Notify about new duplicate or updated group
+        if entry.len() >= 2 {
+            let dup = DuplicateGroup {
+                hash: hash_hex.clone(),
+                paths: entry.clone(),
+            };
+            let _ = window.emit("duplicate_found", dup);
+        }
+
+        // progress notification
+        let progress = ((idx + 1) as f64 / total as f64) * 100.0;
+        let _ = window.emit("scan_progress", progress);
     }
 
-    Ok(map.into_iter()
-        .filter(|(_, v)| v.len() > 1)                  // nur Duplikate
+    Ok(map
+        .into_iter()
+        .filter(|(_, v)| v.len() > 1) // nur Duplikate
         .map(|(hash, paths)| DuplicateGroup { hash, paths })
         .collect())
 }

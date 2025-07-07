@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import HamsterLoader from './HamsterLoader.vue'
 import { open } from '@tauri-apps/plugin-dialog'     // v1-API ¹
 import { invoke } from '@tauri-apps/api/core'
 import { useI18n } from 'vue-i18n'
@@ -34,6 +35,8 @@ async function chooseAndScan () {
       {{ busy ? t('duplicate.scanning') : t('duplicate.choose') }}
     </button>
 
+    <HamsterLoader v-if="busy" />
+
     <ul v-if="duplicates.length" style="margin-top: 1rem;">
       <li v-for="d in duplicates" :key="d.hash" style="margin-top: 0.5rem;">
         <strong style="font-size: 0.875rem;">{{ d.hash }}</strong>
@@ -44,3 +47,4 @@ async function chooseAndScan () {
     </ul>
   </div>
 </template>
+

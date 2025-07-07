@@ -16,7 +16,8 @@ const messages = {
       choose: 'Choose destination',
       destination: 'Destination:',
       devices: 'External devices',
-      refresh: 'Refresh'
+      refresh: 'Refresh',
+      copy: 'Copy images'
     },
     sort: { title: 'Sort' },
     blackhole: { title: 'Blackhole' },
@@ -32,7 +33,8 @@ const messages = {
       choose: 'Ziel wählen',
       destination: 'Ziel:',
       devices: 'Externe Geräte',
-      refresh: 'Aktualisieren'
+      refresh: 'Aktualisieren',
+      copy: 'Bilder kopieren'
     },
     sort: { title: 'Sortieren' },
     blackhole: { title: 'Schwarzes Loch' },

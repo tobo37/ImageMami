@@ -31,6 +31,14 @@ async function loadDevices () {
   devices.value = await invoke<Device[]>('list_external_devices')
 }
 
+async function copyDevice (path: string) {
+  if (!destPath.value) return
+  await invoke('import_device', {
+    devicePath: path,
+    destPath: destPath.value
+  })
+}
+
 function formatSize (bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   let size = bytes
@@ -56,8 +64,9 @@ function formatSize (bytes: number) {
         <button @click="loadDevices">{{ t('import.refresh') }}</button>
       </div>
       <ul v-if="devices.length" style="margin-top: 0.5rem;">
-        <li v-for="d in devices" :key="d.path">
-          {{ d.name }} ({{ formatSize(d.total) }}) - {{ d.path }}
+        <li v-for="d in devices" :key="d.path" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span>{{ d.name }} ({{ formatSize(d.total) }}) - {{ d.path }}</span>
+          <button @click="copyDevice(d.path)" :disabled="!destPath">{{ t('import.copy') }}</button>
         </li>
       </ul>
       <span v-else>-</span>

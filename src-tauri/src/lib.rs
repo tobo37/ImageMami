@@ -21,6 +21,7 @@ pub fn run() {
             duplicate::scan_folder,
             duplicate::scan_folder_stream,
             importer::list_external_devices,
+            importer::import_device,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

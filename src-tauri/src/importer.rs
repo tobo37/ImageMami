@@ -39,7 +39,6 @@ pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
 
 #[tauri::command]
 pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
-    println!("reviced device {device_path} to {dest_path}");
     tauri::async_runtime::spawn_blocking(move || {
         do_import(PathBuf::from(device_path), PathBuf::from(dest_path))
     })

@@ -29,3 +29,4 @@ serde_json = "1"
 tauri-plugin-dialog = "2"
 walkdir = "2"
 blake3  = { version = "1", default-features = false, features = ["rayon"] }
+sysinfo = { version = "0.30", default-features = false }

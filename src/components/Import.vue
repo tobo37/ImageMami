@@ -4,8 +4,14 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { invoke } from '@tauri-apps/api/core'
 import { useI18n } from 'vue-i18n'
 
+interface Device {
+  name: string
+  path: string
+  total: number
+}
+
 const destPath = ref<string | null>(null)
-const devices  = ref<string[]>([])
+const devices  = ref<Device[]>([])
 const { t } = useI18n()
 
 onMounted(() => {
@@ -22,7 +28,18 @@ async function chooseDest () {
 }
 
 async function loadDevices () {
-  devices.value = await invoke<string[]>('list_external_devices')
+  devices.value = await invoke<Device[]>('list_external_devices')
+}
+
+function formatSize (bytes: number) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let size = bytes
+  let i = 0
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024
+    i++
+  }
+  return `${size.toFixed(1)} ${units[i]}`
 }
 </script>
 
@@ -39,7 +56,9 @@ async function loadDevices () {
         <button @click="loadDevices">{{ t('import.refresh') }}</button>
       </div>
       <ul v-if="devices.length" style="margin-top: 0.5rem;">
-        <li v-for="d in devices" :key="d">{{ d }}</li>
+        <li v-for="d in devices" :key="d.path">
+          {{ d.name }} ({{ formatSize(d.total) }}) - {{ d.path }}
+        </li>
       </ul>
       <span v-else>-</span>
     </div>

@@ -4,10 +4,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-4">
-    <router-link class="p-4 border rounded" to="/duplicate">{{ t('duplicate.title') }}</router-link>
-    <router-link class="p-4 border rounded" to="/import">{{ t('import.title') }}</router-link>
-    <router-link class="p-4 border rounded" to="/sort">{{ t('sort.title') }}</router-link>
-    <router-link class="p-4 border rounded" to="/blackhole">{{ t('blackhole.title') }}</router-link>
+  <div class="view">
+    <div class="grid-home">
+      <router-link class="card" to="/duplicate">{{ t('duplicate.title') }}</router-link>
+      <router-link class="card" to="/import">{{ t('import.title') }}</router-link>
+      <router-link class="card" to="/sort">{{ t('sort.title') }}</router-link>
+      <router-link class="card" to="/blackhole">{{ t('blackhole.title') }}</router-link>
+    </div>
   </div>
 </template>

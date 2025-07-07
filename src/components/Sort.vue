@@ -4,5 +4,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <h1>{{ t('sort.title') }}</h1>
+  <div class="view">
+    <h1>{{ t('sort.title') }}</h1>
+  </div>
 </template>

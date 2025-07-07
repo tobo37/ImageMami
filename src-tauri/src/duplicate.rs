@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::{collections::HashMap, fs::File, io::{BufReader, Read}, path::PathBuf, time::Instant};
 use walkdir::WalkDir;
 use blake3::Hasher;
+use tauri::Emitter;               // <-- brings `emit` into scope
 
 #[derive(Serialize)]
 pub struct DuplicateGroup {
@@ -9,11 +10,12 @@ pub struct DuplicateGroup {
     pub paths: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]       // <-- now `Clone` as well
 pub struct DuplicateProgress {
     pub progress: f32,
     pub eta_seconds: f32,
 }
+
 
 #[tauri::command]
 pub async fn scan_folder(path: String) -> Result<Vec<DuplicateGroup>, String> {
@@ -65,6 +67,7 @@ fn heavy_scan(root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
         .map(|(hash, paths)| DuplicateGroup { hash, paths })
         .collect())
 }
+
 
 fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
     let mut map: HashMap<String, Vec<String>> = HashMap::new();

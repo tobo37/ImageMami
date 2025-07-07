@@ -10,7 +10,7 @@ pub struct DuplicateGroup {
     pub paths: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct DuplicateProgress {
     pub progress: f32,
     pub eta_seconds: f32,

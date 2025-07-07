@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 const theme = ref<'light' | 'dark'>('light')
 
@@ -8,6 +9,12 @@ const router = useRouter()
 const route = useRoute()
 const showBackButton = computed(() => route.name !== 'home')
 const headerClass = computed(() => ({ 'with-back': showBackButton.value }))
+const { t } = useI18n()
+const headerTitle = computed(() => {
+  const name = route.name as string | undefined
+  if (!name || name === 'home') return ''
+  return t(`${name}.title`).toUpperCase()
+})
 
 onMounted(() => {
   theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -52,6 +59,7 @@ function goBack() {
           />
         </svg>
       </button>
+      <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
       <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
     </header>
     <router-view />
@@ -67,5 +75,11 @@ function goBack() {
 }
 .app-header.with-back {
   justify-content: space-between;
+}
+.app-title {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 </style>

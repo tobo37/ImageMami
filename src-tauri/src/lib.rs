@@ -4,6 +4,7 @@ mod sort;
 mod blackhole;
 
 pub use duplicate::DuplicateGroup;
+pub use importer::ExternalDevice;
 
 #[tauri::command]
 fn greet(name: &str) -> String {

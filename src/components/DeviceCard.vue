@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import DotsLoader from './DotsLoader.vue'
 
 interface Device {
   name: string
@@ -11,6 +12,7 @@ const props = defineProps<{
   device: Device
   disabled: boolean
   copyText: string
+  busy: boolean
   formatSize: (bytes: number) => string
 }>()
 
@@ -33,9 +35,15 @@ function onCopy () { emit('import', props.device.path) }
     <p class="device-path">{{ props.device.path }}</p>
     <p class="device-size">{{ props.formatSize(props.device.total) }}</p>
 
-    <button class="btn w-full" :disabled="disabled" @click="onCopy">
+    <button
+      v-if="!props.busy"
+      class="btn w-full"
+      :disabled="disabled || props.busy"
+      @click="onCopy"
+    >
       {{ copyText }}
     </button>
+    <DotsLoader v-else />
   </div>
 </template>
 

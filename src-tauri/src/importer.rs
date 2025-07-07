@@ -11,6 +11,15 @@ pub struct ExternalDevice {
     pub total: u64,
 }
 
+const ALLOWED_EXTENSIONS: &[&str] = &[
+    // Standard-Rasterformate
+    "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
+    // Moderne / mobile Formate
+    "heic", "heif",
+    // RAW-Formate diverser Kamerahersteller
+    "raw", "arw", "dng", "cr2", "nef", "pef", "rw2", "sr2",
+];
+
 #[tauri::command]
 pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
     let disks = Disks::new_with_refreshed_list();
@@ -30,6 +39,7 @@ pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
 
 #[tauri::command]
 pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
+    println!("reviced device {device_path} to {dest_path}");
     tauri::async_runtime::spawn_blocking(move || {
         do_import(PathBuf::from(device_path), PathBuf::from(dest_path))
     })
@@ -49,7 +59,7 @@ fn do_import(device: PathBuf, dest: PathBuf) -> Result<(), String> {
             .and_then(|s| s.to_str())
             .map(|s| s.to_lowercase());
         if let Some(ext) = ext {
-            if !matches!(ext.as_str(), "jpg" | "jpeg" | "png" | "gif") {
+            if !ALLOWED_EXTENSIONS.iter().any(|ext_ok| ext_ok.eq_ignore_ascii_case(&ext)) {
                 continue;
             }
         } else {

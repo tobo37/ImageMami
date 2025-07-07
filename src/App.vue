@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
 const theme = ref<'light' | 'dark'>('light')
 
@@ -9,13 +9,21 @@ onMounted(() => {
     : 'light'
 })
 
+watch(
+  theme,
+  (val) => {
+    document.documentElement.setAttribute('data-theme', val)
+  },
+  { immediate: true }
+)
+
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light'
 }
 </script>
 
 <template>
-  <div :data-theme="theme">
+  <div>
     <header class="app-header">
       <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
     </header>

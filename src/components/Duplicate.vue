@@ -29,16 +29,18 @@ async function chooseAndScan () {
 </script>
 
 <template>
-  <button @click="chooseAndScan" :disabled="busy">
-    {{ busy ? t('duplicate.scanning') : t('duplicate.choose') }}
-  </button>
+  <div class="view">
+    <button @click="chooseAndScan" :disabled="busy">
+      {{ busy ? t('duplicate.scanning') : t('duplicate.choose') }}
+    </button>
 
-  <ul v-if="duplicates.length">
-    <li v-for="d in duplicates" :key="d.hash" class="mt-4">
-      <strong class="text-sm">{{ d.hash }}</strong>
-      <ul class="ml-4 list-disc">
-        <li v-for="p in d.paths" :key="p">{{ p }}</li>
-      </ul>
-    </li>
-  </ul>
+    <ul v-if="duplicates.length" style="margin-top: 1rem;">
+      <li v-for="d in duplicates" :key="d.hash" style="margin-top: 0.5rem;">
+        <strong style="font-size: 0.875rem;">{{ d.hash }}</strong>
+        <ul style="margin-left: 1rem; list-style: disc;">
+          <li v-for="p in d.paths" :key="p">{{ p }}</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 </template>

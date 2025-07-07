@@ -9,12 +9,17 @@ const router = useRouter()
 const route = useRoute()
 const showBackButton = computed(() => route.name !== 'home')
 const headerClass = computed(() => ({ 'with-back': showBackButton.value }))
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const headerTitle = computed(() => {
   const name = route.name as string | undefined
   if (!name || name === 'home') return ''
   return t(`${name}.title`).toUpperCase()
 })
+
+const languages = [
+  { code: 'en', flag: '🇬🇧' },
+  { code: 'de', flag: '🇩🇪' },
+]
 
 onMounted(() => {
   theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -61,6 +66,11 @@ function goBack() {
       </button>
       <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
       <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
+      <select v-model="locale" class="lang-select" aria-label="Language">
+        <option v-for="lang in languages" :key="lang.code" :value="lang.code">
+          {{ lang.flag }}
+        </option>
+      </select>
     </header>
     <router-view />
   </div>
@@ -81,5 +91,15 @@ function goBack() {
   text-align: center;
   font-weight: bold;
   text-transform: uppercase;
+}
+.lang-select {
+  margin-left: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.lang-select:focus {
+  outline: none;
 }
 </style>

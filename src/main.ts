@@ -14,7 +14,9 @@ const messages = {
     import: {
       title: 'Import',
       choose: 'Choose destination',
-      destination: 'Destination:'
+      destination: 'Destination:',
+      devices: 'External devices',
+      refresh: 'Refresh'
     },
     sort: { title: 'Sort' },
     blackhole: { title: 'Blackhole' },
@@ -28,7 +30,9 @@ const messages = {
     import: {
       title: 'Importieren',
       choose: 'Ziel wählen',
-      destination: 'Ziel:'
+      destination: 'Ziel:',
+      devices: 'Externe Geräte',
+      refresh: 'Aktualisieren'
     },
     sort: { title: 'Sortieren' },
     blackhole: { title: 'Schwarzes Loch' },

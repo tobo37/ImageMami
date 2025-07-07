@@ -2,8 +2,7 @@ use serde::Serialize;
 use std::{collections::HashMap, fs::File, io::{BufReader, Read}, path::PathBuf, time::Instant};
 use tauri::Emitter;
 use walkdir::WalkDir;
-use blake3::Hasher;
-use tauri::Emitter;               // <-- brings `emit` into scope
+use blake3::Hasher;             // <-- brings `emit` into scope
 
 #[derive(Serialize)]
 pub struct DuplicateGroup {

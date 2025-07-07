@@ -10,7 +10,7 @@ pub struct ExternalDevice {
 
 #[tauri::command]
 pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
-    let mut disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list();
 
     let mut result = Vec::new();
     for disk in disks.list() {

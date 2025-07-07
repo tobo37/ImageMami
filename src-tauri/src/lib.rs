@@ -7,7 +7,7 @@ use std::{
 };
 use walkdir::WalkDir; // rekursives Traversieren ³
 use blake3::Hasher; // schneller Hash ²
-use tauri::{Manager, Window};
+use tauri::{AppHandle, Manager, WebviewWindow};
 
 #[derive(Serialize)]
 struct DuplicateGroup {
@@ -17,10 +17,12 @@ struct DuplicateGroup {
 
 /// Schwergewichtige Arbeit in eigenen Thread auslagern
 #[tauri::command]
-async fn scan_folder(window: Window, path: String) -> Result<Vec<DuplicateGroup>, String> {
+async fn scan_folder(app: AppHandle, window: WebviewWindow, path: String) -> Result<Vec<DuplicateGroup>, String> {
     println!("recive path {path}");
+    let label = window.label().to_string();
+    let handle = app.clone();
     let duplicates = tauri::async_runtime::spawn_blocking(move || {
-        heavy_scan(PathBuf::from(path), window)
+        heavy_scan(PathBuf::from(path), handle, label)
     })
     .await
     .map_err(|e| e.to_string())??;
@@ -28,7 +30,7 @@ async fn scan_folder(window: Window, path: String) -> Result<Vec<DuplicateGroup>
 }
 
 /// echte Scan-Routine
-fn heavy_scan(root: PathBuf, window: Window) -> Result<Vec<DuplicateGroup>, String> {
+fn heavy_scan(root: PathBuf, app: AppHandle, label: String) -> Result<Vec<DuplicateGroup>, String> {
     let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
     let files: Vec<PathBuf> = WalkDir::new(&root)
@@ -60,12 +62,12 @@ fn heavy_scan(root: PathBuf, window: Window) -> Result<Vec<DuplicateGroup>, Stri
                 hash: hash_hex.clone(),
                 paths: entry.clone(),
             };
-            let _ = window.emit("duplicate_found", dup);
+            let _ = app.emit_to(&label, "duplicate_found", dup);
         }
 
         // progress notification
         let progress = ((idx + 1) as f64 / total as f64) * 100.0;
-        let _ = window.emit("scan_progress", progress);
+        let _ = app.emit_to(&label, "scan_progress", progress);
     }
 
     Ok(map

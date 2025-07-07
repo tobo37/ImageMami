@@ -11,6 +11,7 @@ interface Device { name: string; path: string; total: number }
 
 const destPath  = ref<string | null>(null)
 const devices   = ref<Device[]>([])
+const busyPath  = ref<string | null>(null)
 
 onMounted(() => {
   destPath.value = localStorage.getItem('importDest')
@@ -31,7 +32,12 @@ async function loadDevices () {
 
 async function copyDevice (path: string) {
   if (!destPath.value) return
-  await invoke('import_device', { devicePath: path, destPath: destPath.value })
+  busyPath.value = path
+  try {
+    await invoke('import_device', { devicePath: path, destPath: destPath.value })
+  } finally {
+    busyPath.value = null
+  }
 }
 
 function formatSize (bytes: number) {
@@ -66,6 +72,7 @@ function formatSize (bytes: number) {
           :key="d.path"
           :device="d"
           :disabled="!destPath"
+          :busy="busyPath === d.path"
           :copy-text="$t('import.copy')"
           :format-size="formatSize"
           @import="copyDevice" />

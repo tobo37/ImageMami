@@ -18,6 +18,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             duplicate::scan_folder,
+            duplicate::scan_folder_stream,
             importer::list_external_devices,
         ])
         .run(tauri::generate_context!())

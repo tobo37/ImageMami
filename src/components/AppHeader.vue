@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import twemoji from 'twemoji'
 
 const theme = ref<'light' | 'dark'>('light')
 
@@ -16,15 +17,19 @@ const headerTitle = computed(() => {
   return t(`${name}.title`).toUpperCase()
 })
 
+const headerRef = ref<HTMLElement | null>(null)
+
 const languages = [
   { code: 'en', flag: '🇬🇧' },
   { code: 'de', flag: '🇩🇪' },
 ]
 
-onMounted(() => {
+onMounted(async () => {
   theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light'
+  await nextTick()
+  if (headerRef.value) twemoji.parse(headerRef.value)
 })
 
 watch(
@@ -45,7 +50,7 @@ function goBack() {
 </script>
 
 <template>
-  <header :class="['app-header', headerClass]">
+  <header ref="headerRef" :class="['app-header', headerClass]">
     <button v-if="showBackButton" @click="goBack" aria-label="Back">
       <svg
         width="24"

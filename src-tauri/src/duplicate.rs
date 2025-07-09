@@ -128,3 +128,11 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
             .collect(),
     )
 }
+
+#[tauri::command]
+pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
+    for p in paths {
+        std::fs::remove_file(&p).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}

@@ -10,6 +10,8 @@ const messages = {
       title: 'Duplicate',
       choose: 'Choose folder & scan',
       scanning: 'Scanning…',
+      deleteMarked: 'Delete marked',
+      confirmDelete: 'Are you sure you want to delete {count} files?'
     },
     import: {
       title: 'Import',
@@ -25,12 +27,15 @@ const messages = {
     },
     sort: { title: 'Sort' },
     blackhole: { title: 'Blackhole' },
+    common: { yes: 'Yes', no: 'No' },
   },
   de: {
     duplicate: {
       title: 'Duplikate',
       choose: 'Ordner auswählen & scannen',
       scanning: 'Scanne…',
+      deleteMarked: 'Markierte löschen',
+      confirmDelete: 'Sicher, dass Sie {count} Dateien löschen wollen?'
     },
     import: {
       title: 'Importieren',
@@ -46,6 +51,7 @@ const messages = {
     },
     sort: { title: 'Sortieren' },
     blackhole: { title: 'Schwarzes Loch' },
+    common: { yes: 'Ja', no: 'Nein' },
   },
 }
 

@@ -6,7 +6,11 @@ use blake3::Hasher;             // <-- brings `emit` into scope
 
 #[derive(Serialize)]
 pub struct DuplicateGroup {
+    /// Tag describing the duplicate detection method. Currently always `"hash"`.
+    pub tag: String,
+    /// Content hash of all files in this group.
     pub hash: String,
+    /// Paths of the duplicate files.
     pub paths: Vec<String>,
 }
 
@@ -64,7 +68,11 @@ fn heavy_scan(root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
 
     Ok(map.into_iter()
         .filter(|(_, v)| v.len() > 1)
-        .map(|(hash, paths)| DuplicateGroup { hash, paths })
+        .map(|(hash, paths)| DuplicateGroup {
+            tag: "hash".to_string(),
+            hash,
+            paths,
+        })
         .collect())
 }
 
@@ -108,9 +116,15 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
         );
     }
 
-    Ok(map
-        .into_iter()
-        .filter(|(_, v)| v.len() > 1)
-        .map(|(hash, paths)| DuplicateGroup { hash, paths })
-        .collect())
+    Ok(
+        map
+            .into_iter()
+            .filter(|(_, v)| v.len() > 1)
+            .map(|(hash, paths)| DuplicateGroup {
+                tag: "hash".to_string(),
+                hash,
+                paths,
+            })
+            .collect(),
+    )
 }

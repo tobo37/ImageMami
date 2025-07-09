@@ -7,6 +7,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useI18n } from 'vue-i18n'
 
 interface DuplicateGroup {
+  tag: string
   hash: string
   paths: string[]
 }
@@ -69,7 +70,7 @@ onBeforeUnmount(() => {
 
     <ul v-if="duplicates.length" style="margin-top: 1rem;">
       <li v-for="d in duplicates" :key="d.hash" style="margin-top: 0.5rem;">
-        <strong style="font-size: 0.875rem;">{{ d.hash }}</strong>
+        <strong style="font-size: 0.875rem;">{{ d.tag }}: {{ d.hash }}</strong>
         <ul style="margin-left: 1rem; list-style: disc;">
           <li v-for="p in d.paths" :key="p">{{ p }}</li>
         </ul>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, onBeforeUnmount, computed } from 'vue'
 import HamsterLoader from './HamsterLoader.vue'
 import { open } from '@tauri-apps/plugin-dialog'     // v1-API ¹
 import { invoke } from '@tauri-apps/api/core'
@@ -21,8 +21,11 @@ const duplicates = ref<DuplicateGroup[]>([])
 const busy       = ref(false)
 const progress   = ref(0)
 const eta        = ref(0)
+const marked     = ref<string[]>([])
+const showConfirm = ref(false)
 let unlisten: UnlistenFn | null = null
 const { t } = useI18n()
+const markedCount = computed(() => marked.value.length)
 
 function recordDecision (tag: string, path: string, value: string) {
   let del: boolean | null
@@ -30,6 +33,12 @@ function recordDecision (tag: string, path: string, value: string) {
   else if (value === 'delete') del = true
   else del = null
   invoke('record_decision', { tag, path, delete: del })
+  if (value === 'delete') {
+    if (!marked.value.includes(path)) marked.value.push(path)
+  } else {
+    const idx = marked.value.indexOf(path)
+    if (idx !== -1) marked.value.splice(idx, 1)
+  }
 }
 
 async function chooseAndScan () {
@@ -39,6 +48,7 @@ async function chooseAndScan () {
   busy.value = true
   progress.value = 0
   eta.value = 0
+  marked.value = []
   if (unlisten) {
     unlisten()
     unlisten = null
@@ -58,6 +68,27 @@ async function chooseAndScan () {
       unlisten = null
     }
   }
+}
+
+function deleteMarked () {
+  showConfirm.value = true
+}
+
+async function confirmDelete () {
+  await invoke('delete_files', { paths: marked.value })
+  showConfirm.value = false
+  // remove deleted paths from duplicate list
+  duplicates.value = duplicates.value
+    .map(g => ({
+      ...g,
+      paths: g.paths.filter(p => !marked.value.includes(p))
+    }))
+    .filter(g => g.paths.length > 0)
+  marked.value = []
+}
+
+function cancelDelete () {
+  showConfirm.value = false
 }
 
 onBeforeUnmount(() => {
@@ -101,6 +132,60 @@ onBeforeUnmount(() => {
         </ul>
       </li>
     </ul>
+    <button v-if="markedCount" style="margin-top: 1rem;" @click="deleteMarked">
+      {{ t('duplicate.deleteMarked') }}
+    </button>
+
+    <div v-if="showConfirm" class="modal-backdrop">
+      <div class="modal">
+        <p>{{ t('duplicate.confirmDelete', { count: markedCount }) }}</p>
+        <ul class="file-list">
+          <li v-for="p in marked" :key="p">{{ p }}</li>
+        </ul>
+        <div class="actions">
+          <button @click="confirmDelete">{{ t('common.yes') }}</button>
+          <button class="ghost" @click="cancelDelete">{{ t('common.no') }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  max-width: 90%;
+}
+.file-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+button.ghost {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+</style>
 

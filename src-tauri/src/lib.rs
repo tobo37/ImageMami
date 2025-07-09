@@ -2,6 +2,7 @@ mod duplicate;
 mod importer;
 mod sort;
 mod blackhole;
+mod training;
 
 pub use duplicate::DuplicateGroup;
 pub use importer::ExternalDevice;
@@ -22,6 +23,7 @@ pub fn run() {
             duplicate::scan_folder_stream,
             importer::list_external_devices,
             importer::import_device,
+            training::record_decision,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

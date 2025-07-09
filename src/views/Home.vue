@@ -5,6 +5,7 @@ const { t } = useI18n()
 
 <template>
   <div class="view">
+    <div class="preview-banner">preview - wait for release</div>
     <div class="grid-home">
       <router-link class="card" to="/duplicate">{{ t('duplicate.title') }}</router-link>
       <router-link class="card" to="/import">{{ t('import.title') }}</router-link>

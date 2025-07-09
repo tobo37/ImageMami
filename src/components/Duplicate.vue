@@ -80,13 +80,23 @@ onBeforeUnmount(() => {
       <li v-for="d in duplicates" :key="d.hash" style="margin-top: 0.5rem;">
         <strong style="font-size: 0.875rem;">{{ d.tag }}: {{ d.hash }}</strong>
         <ul style="margin-left: 1rem; list-style: disc;">
-          <li v-for="p in d.paths" :key="p">
+          <li v-for="(p, idx) in d.paths" :key="p">
             {{ p }}
-            <select @change="recordDecision(d.tag, p, ($event.target as HTMLSelectElement).value)" style="margin-left: 0.5rem;">
-              <option value="unknown">Unknown</option>
-              <option value="keep">Keep</option>
-              <option value="delete">Delete</option>
-            </select>
+            <label style="margin-left: 0.5rem;">
+              <input type="radio" :name="d.hash + '-' + idx" value="unknown" checked
+                @change="recordDecision(d.tag, p, 'unknown')" />
+              Unknown
+            </label>
+            <label style="margin-left: 0.5rem;">
+              <input type="radio" :name="d.hash + '-' + idx" value="keep"
+                @change="recordDecision(d.tag, p, 'keep')" />
+              Keep
+            </label>
+            <label style="margin-left: 0.5rem;">
+              <input type="radio" :name="d.hash + '-' + idx" value="delete"
+                @change="recordDecision(d.tag, p, 'delete')" />
+              Delete
+            </label>
           </li>
         </ul>
       </li>

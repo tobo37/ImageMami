@@ -81,3 +81,48 @@ fn do_import(device: PathBuf, dest: PathBuf) -> Result<(), String> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::{Path, PathBuf};
+    use std::fs;
+
+    fn reset_destination() -> PathBuf {
+        let dest = Path::new("../tests/assets/copy_destination");
+        if dest.exists() {
+            fs::remove_dir_all(dest).unwrap();
+        }
+        fs::create_dir_all(dest).unwrap();
+        dest.to_path_buf()
+    }
+
+    #[test]
+    fn import_copies_allowed_files() {
+        let dest = reset_destination();
+        let device = Path::new("../tests/assets/copy_source");
+        tauri::async_runtime::block_on(import_device(
+            device.to_string_lossy().into_owned(),
+            dest.to_string_lossy().into_owned(),
+        ))
+        .expect("import failed");
+
+        let target_dir = dest.join("2025").join("2025-07-09");
+        let mut files: Vec<String> = fs::read_dir(&target_dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        files.sort();
+        assert_eq!(
+            files,
+            vec![
+                "ChatGPT Image 9. Juli 2025, 11_05_13.png", 
+                "logo-icon-33.webp", 
+                "logo-icon.png", 
+                "logo-icon.webp", 
+                "logo.jpg", 
+                "logo.webp",
+            ]
+        );
+    }
+}

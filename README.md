@@ -21,3 +21,4 @@ When reviewing duplicate files in the **Duplicate** view you can now mark each
 file as *Keep*, *Delete* or *Unknown*. These decisions are stored in
 `training.json` inside the application's data directory. The stored information
 can later be used to train an AI model on how you handle duplicates.
+You can export the collected training data from the **Training Data** section in the main menu.

@@ -24,6 +24,7 @@ pub fn run() {
             importer::list_external_devices,
             importer::import_device,
             training::record_decision,
+            training::export_training,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

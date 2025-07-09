@@ -19,6 +19,10 @@ const messages = {
       refresh: 'Refresh',
       copy: 'Copy images'
     },
+    training: {
+      title: 'Training Data',
+      export: 'Export file'
+    },
     sort: { title: 'Sort' },
     blackhole: { title: 'Blackhole' },
   },
@@ -35,6 +39,10 @@ const messages = {
       devices: 'Externe Geräte',
       refresh: 'Aktualisieren',
       copy: 'Bilder kopieren'
+    },
+    training: {
+      title: 'Trainingsdaten',
+      export: 'Datei exportieren'
     },
     sort: { title: 'Sortieren' },
     blackhole: { title: 'Schwarzes Loch' },

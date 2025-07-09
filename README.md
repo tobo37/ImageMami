@@ -14,3 +14,10 @@ Since TypeScript cannot handle type information for `.vue` imports, they are shi
 2. Reload the VS Code window by running `Developer: Reload Window` from the command palette.
 
 You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
+
+## Duplicate training
+
+When reviewing duplicate files in the **Duplicate** view you can now mark each
+file as *Keep*, *Delete* or *Unknown*. These decisions are stored in
+`training.json` inside the application's data directory. The stored information
+can later be used to train an AI model on how you handle duplicates.

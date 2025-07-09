@@ -24,6 +24,14 @@ const eta        = ref(0)
 let unlisten: UnlistenFn | null = null
 const { t } = useI18n()
 
+function recordDecision (tag: string, path: string, value: string) {
+  let del: boolean | null
+  if (value === 'keep') del = false
+  else if (value === 'delete') del = true
+  else del = null
+  invoke('record_decision', { tag, path, delete: del })
+}
+
 async function chooseAndScan () {
   const selected = await open({ directory: true, multiple: false })
   if (!selected) return          // Dialog abgebrochen
@@ -72,7 +80,14 @@ onBeforeUnmount(() => {
       <li v-for="d in duplicates" :key="d.hash" style="margin-top: 0.5rem;">
         <strong style="font-size: 0.875rem;">{{ d.tag }}: {{ d.hash }}</strong>
         <ul style="margin-left: 1rem; list-style: disc;">
-          <li v-for="p in d.paths" :key="p">{{ p }}</li>
+          <li v-for="p in d.paths" :key="p">
+            {{ p }}
+            <select @change="recordDecision(d.tag, p, ($event.target as HTMLSelectElement).value)" style="margin-left: 0.5rem;">
+              <option value="unknown">Unknown</option>
+              <option value="keep">Keep</option>
+              <option value="delete">Delete</option>
+            </select>
+          </li>
         </ul>
       </li>
     </ul>

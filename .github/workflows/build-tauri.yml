@@ -75,9 +75,9 @@ jobs:
 
       - name: Build Tauri application
         run: |
-          if [[ "${{ matrix.bundle }}" == "flatpak" ]]; then
+          if [ "${{ matrix.bundle }}" = "flatpak" ]; then
             bunx tauri build --bundles flatpak
-          elif [[ "${{ matrix.bundle }}" == "rpm" ]]; then
+          elif [ "${{ matrix.bundle }}" = "rpm" ]; then
             bunx tauri build --bundles rpm
           else
             bunx tauri build --target ${{ matrix.target }}

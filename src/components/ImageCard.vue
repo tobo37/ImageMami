@@ -1,6 +1,6 @@
 <template>
   <div class="image-card" :class="{ marked }">
-    <img :src="'file://' + path" alt="duplicate" />
+    <img :src="src" alt="duplicate" />
     <p class="path">{{ path }}</p>
     <div class="actions">
       <button @click="$emit('decision', 'keep')" class="keep">
@@ -14,12 +14,17 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from "vue";
+import { convertFileSrc } from "@tauri-apps/api/core";
+
+const props = defineProps<{
   path: string;
   marked: boolean;
   keepText: string;
   deleteText: string;
 }>();
+
+const src = computed(() => convertFileSrc(props.path));
 </script>
 
 <style scoped>

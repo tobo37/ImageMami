@@ -1,0 +1,59 @@
+name: Build Tauri App
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to upload assets"
+        required: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            bundle: app
+          - os: ubuntu-latest
+            target: flatpak
+            bundle: flatpak
+          - os: ubuntu-latest
+            target: rpm
+            bundle: rpm
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundle: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build front-end
+        run: bun run build
+      - name: Install system deps (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt install -y libwebkit2gtk-4.0-dev \
+            build-essential curl wget libssl-dev \
+            libgtk-3-dev squashfs-tools \
+            flatpak flatpak-builder \
+            rpm
+      - name: Build Tauri application
+        run: |
+          if [ "${{ matrix.bundle }}" = "flatpak" ]; then
+            bunx tauri build --bundles flatpak
+          elif [ "${{ matrix.bundle }}" = "rpm" ]; then
+            bunx tauri build --bundles rpm
+          else
+            bunx tauri build --target ${{ matrix.target }}
+          fi
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          files: target/release/bundle/**

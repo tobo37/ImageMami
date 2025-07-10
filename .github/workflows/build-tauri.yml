@@ -46,13 +46,28 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt update
+          # Workaround: Zusätzliche Quellen aktivieren und GPG-Schlüssel setzen
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository universe
+          sudo apt update
+
+          # Optional: Problematische Pakete vorinstallieren (damit Abhängigkeiten besser aufgelöst werden)
+          sudo apt install -y libglib2.0-dev libgtk-3-dev
+
+          # libwebkit2gtk Workaround (über cache oder manuelle Quelle, falls nötig)
+          sudo apt install -y libwebkit2gtk-4.0-dev || (
+            echo "Falling back to workaround: download and install manually"
+            sudo apt install -y wget gnupg ca-certificates
+            echo "deb http://archive.ubuntu.com/ubuntu focal main universe" | sudo tee /etc/apt/sources.list.d/focal-webkit.list
+            sudo apt update
+            sudo apt install -y libwebkit2gtk-4.0-dev
+          )
+
+          # Weitere für Tauri benötigte Pakete
           sudo apt install -y \
-            libwebkit2gtk-4.0-dev \
             build-essential \
             curl \
-            wget \
             libssl-dev \
-            libgtk-3-dev \
             squashfs-tools \
             flatpak \
             flatpak-builder \

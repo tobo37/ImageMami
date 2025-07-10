@@ -1,6 +1,8 @@
-# Tauri + Vue + TypeScript
+# ImageMami
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Everything you need to organize your images: Import, sort, and remove duplicates.
+
+Built with **Tauri**, **Vue 3**, and **TypeScript**.
 
 ## Recommended IDE Setup
 
@@ -22,3 +24,7 @@ file as *Keep*, *Delete* or *Unknown*. These decisions are stored in
 `training.json` inside the application's data directory. The stored information
 can later be used to train an AI model on how you handle duplicates.
 You can export the collected training data from the **Training Data** section in the main menu.
+
+## Pre-release builds
+
+Early testers can try unstable builds from GitHub pre-releases. See [docs/PRE_RELEASE.md](docs/PRE_RELEASE.md) for instructions on creating and downloading pre-releases.

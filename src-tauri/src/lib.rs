@@ -1,11 +1,13 @@
 mod duplicate;
 mod importer;
+mod file_formats;
 mod sort;
 mod blackhole;
 mod training;
 
 pub use duplicate::DuplicateGroup;
 pub use importer::ExternalDevice;
+pub use file_formats::ALLOWED_EXTENSIONS;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -19,7 +21,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             greet,
-            duplicate::scan_folder,
             duplicate::scan_folder_stream,
             duplicate::delete_files,
             importer::list_external_devices,

@@ -3,6 +3,7 @@ use std::{collections::HashMap, fs::File, io::{BufReader, Read}, path::PathBuf, 
 use tauri::Emitter;
 use walkdir::WalkDir;
 use blake3::Hasher;             // <-- brings `emit` into scope
+use crate::file_formats::ALLOWED_EXTENSIONS;
 
 #[derive(Serialize)]
 pub struct DuplicateGroup {
@@ -41,6 +42,13 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file())
+        .filter(|e| {
+            e.path()
+                .extension()
+                .and_then(|s| s.to_str())
+                .map(|ext| ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)))
+                .unwrap_or(false)
+        })
         .map(|e| e.path().to_path_buf())
         .collect();
 

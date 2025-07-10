@@ -3,6 +3,7 @@ use sysinfo::Disks;
 use std::{fs, path::PathBuf};
 use walkdir::WalkDir;
 use chrono::prelude::*;
+use crate::file_formats::ALLOWED_EXTENSIONS;
 
 #[derive(Serialize)]
 pub struct ExternalDevice {
@@ -11,14 +12,6 @@ pub struct ExternalDevice {
     pub total: u64,
 }
 
-const ALLOWED_EXTENSIONS: &[&str] = &[
-    // Standard-Rasterformate
-    "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp",
-    // Moderne / mobile Formate
-    "heic", "heif",
-    // RAW-Formate diverser Kamerahersteller
-    "raw", "arw", "dng", "cr2", "nef", "pef", "rw2", "sr2",
-];
 
 #[tauri::command]
 pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {

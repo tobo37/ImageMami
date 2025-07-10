@@ -24,3 +24,7 @@ file as *Keep*, *Delete* or *Unknown*. These decisions are stored in
 `training.json` inside the application's data directory. The stored information
 can later be used to train an AI model on how you handle duplicates.
 You can export the collected training data from the **Training Data** section in the main menu.
+
+## Pre-release builds
+
+Early testers can try unstable builds from GitHub pre-releases. See [docs/PRE_RELEASE.md](docs/PRE_RELEASE.md) for instructions on creating and downloading pre-releases.

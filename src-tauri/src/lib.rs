@@ -1,11 +1,13 @@
 mod duplicate;
 mod importer;
+mod file_formats;
 mod sort;
 mod blackhole;
 mod training;
 
 pub use duplicate::DuplicateGroup;
 pub use importer::ExternalDevice;
+pub use file_formats::ALLOWED_EXTENSIONS;
 
 #[tauri::command]
 fn greet(name: &str) -> String {

@@ -101,3 +101,19 @@ pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn detect_logo_webp_duplicate() {
+        let path = Path::new("../tests/assets").to_string_lossy().to_string();
+        let groups = tauri::async_runtime::block_on(scan_folder(path)).expect("scan failed");
+        assert!(groups.iter().any(|g| {
+            g.paths.iter().any(|p| p.ends_with("dublications/logo.webp")) &&
+            g.paths.iter().any(|p| p.ends_with("copy_source/logo.webp"))
+        }));
+    }
+}

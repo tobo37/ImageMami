@@ -14,7 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, onMounted } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 
 const props = defineProps<{
@@ -24,7 +25,19 @@ const props = defineProps<{
   deleteText: string;
 }>();
 
-const src = computed(() => convertFileSrc(props.path));
+const src = ref<string>("");
+
+onMounted(async () => {
+  const ext = props.path.split(".").pop()?.toLowerCase();
+  const rawExts = ["raw", "arw", "dng", "cr2", "nef", "pef", "rw2", "sr2"];
+  if (ext && rawExts.includes(ext)) {
+    src.value = await invoke<string>("generate_thumbnail", {
+      path: props.path,
+    });
+  } else {
+    src.value = convertFileSrc(props.path);
+  }
+});
 </script>
 
 <style scoped>

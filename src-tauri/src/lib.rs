@@ -4,6 +4,7 @@ mod file_formats;
 mod sort;
 mod blackhole;
 mod training;
+mod preview;
 
 pub use duplicate::DuplicateGroup;
 pub use importer::ExternalDevice;
@@ -27,6 +28,7 @@ pub fn run() {
             importer::import_device,
             training::record_decision,
             training::export_training,
+            preview::generate_thumbnail,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

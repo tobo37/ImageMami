@@ -18,26 +18,15 @@
       <div v-for="d in duplicates" :key="d.hash" class="duplicate-group">
         <h3>{{ d.tag }}</h3>
         <div class="image-pair">
-          <div
+          <ImageCard
             v-for="p in d.paths"
             :key="p"
-            class="image-card"
-            :class="{ marked: marked.includes(p) }"
-          >
-            <img :src="'file://' + p" alt="duplicate" />
-            <p class="path">{{ p }}</p>
-            <div class="actions">
-              <button @click="recordDecision(d.tag, p, 'keep')" class="keep">
-                {{ t("common.keep") }}
-              </button>
-              <button
-                @click="recordDecision(d.tag, p, 'delete')"
-                class="delete"
-              >
-                {{ t("common.delete") }}
-              </button>
-            </div>
-          </div>
+            :path="p"
+            :marked="marked.includes(p)"
+            :keep-text="t('common.keep')"
+            :delete-text="t('common.delete')"
+            @decision="(v) => recordDecision(d.tag, p, v)"
+          />
         </div>
       </div>
     </div>
@@ -46,20 +35,15 @@
       {{ t("duplicate.deleteMarked") }}
     </button>
 
-    <div v-if="showConfirm" class="modal-backdrop">
-      <div class="modal">
-        <p>{{ t("duplicate.confirmDelete", { count: markedCount }) }}</p>
-        <ul class="file-list">
-          <li v-for="p in marked" :key="p">{{ p }}</li>
-        </ul>
-        <div class="actions">
-          <button @click="confirmDelete">{{ t("common.yes") }}</button>
-          <button class="ghost" @click="cancelDelete">
-            {{ t("common.no") }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <DeleteConfirmModal
+      :visible="showConfirm"
+      :files="marked"
+      :message="t('duplicate.confirmDelete', { count: markedCount })"
+      :yes-text="t('common.yes')"
+      :no-text="t('common.no')"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -70,6 +54,8 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "vue-i18n";
 import HamsterLoader from "./HamsterLoader.vue";
+import ImageCard from "./ImageCard.vue";
+import DeleteConfirmModal from "./DeleteConfirmModal.vue";
 
 interface DuplicateGroup {
   tag: string;
@@ -215,57 +201,6 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
-.image-card {
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  background: var(--card-bg);
-  width: 200px;
-  text-align: center;
-  position: relative;
-}
-
-.image-card img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 0.25rem;
-}
-
-.image-card .path {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin: 0.5rem 0;
-  word-break: break-word;
-}
-
-.image-card .actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.image-card button {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-}
-
-.image-card button.keep {
-  background: var(--accent-color, green);
-  color: white;
-}
-
-.image-card button.delete {
-  background: red;
-  color: white;
-}
-
-.image-card.marked {
-  outline: 2px solid red;
-}
-
 .delete-button {
   margin-top: 2rem;
   background: red;
@@ -273,45 +208,5 @@ onBeforeUnmount(() => {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: bold;
-}
-
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal {
-  background: var(--card-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  max-width: 90%;
-}
-
-.file-list {
-  max-height: 200px;
-  overflow-y: auto;
-  margin: 1rem 0;
-  padding-left: 1rem;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-button.ghost {
-  background: transparent;
-  color: var(--accent-color);
-  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 </style>

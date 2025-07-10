@@ -1,5 +1,5 @@
 # script origin: https://github.com/tauri-apps/tauri-action
-name: "publish"
+name: "publish-prerelease"
 
 on:
   workflow_dispatch:

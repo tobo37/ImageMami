@@ -1,6 +1,6 @@
 <template>
   <div class="image-card" :class="{ marked }">
-    <img :src="src" alt="duplicate" />
+    <img :src="src" alt="duplicate"/>
     <p class="path">{{ path }}</p>
     <div class="actions">
       <button @click="$emit('decision', 'keep')" class="keep">
@@ -51,9 +51,11 @@ onMounted(async () => {
   position: relative;
 }
 .image-card img {
-  width: 100%;
+  max-width: 256px;
+  max-height: 256px;
+  width: auto;
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 0.25rem;
 }
 .image-card .path {

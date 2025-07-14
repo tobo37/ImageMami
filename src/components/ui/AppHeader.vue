@@ -1,46 +1,46 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { ref, onMounted, watch, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 
-const theme = ref<'light' | 'dark'>('light')
+const theme = ref<"light" | "dark">("light");
 
-const router = useRouter()
-const route = useRoute()
-const showBackButton = computed(() => route.name !== 'home')
-const headerClass = computed(() => ({ 'with-back': showBackButton.value }))
-const { t, locale } = useI18n()
+const router = useRouter();
+const route = useRoute();
+const showBackButton = computed(() => route.name !== "home");
+const headerClass = computed(() => ({ "with-back": showBackButton.value }));
+const { t, locale } = useI18n();
 const headerTitle = computed(() => {
-  const name = route.name as string | undefined
-  if (!name || name === 'home') return ''
-  return t(`${name}.title`).toUpperCase()
-})
+  const name = route.name as string | undefined;
+  if (!name || name === "home") return "";
+  return t(`${name}.title`).toUpperCase();
+});
 
 const languages = [
-  { code: 'en', flag: '🇬🇧' },
-  { code: 'de', flag: '🇩🇪' },
-]
+  { code: "en", flag: "🇬🇧" },
+  { code: "de", flag: "🇩🇪" },
+];
 
 onMounted(() => {
-  theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
-})
+  theme.value = window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+});
 
 watch(
   theme,
   (val) => {
-    document.documentElement.setAttribute('data-theme', val)
+    document.documentElement.setAttribute("data-theme", val);
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 
 function toggleTheme() {
-  theme.value = theme.value === 'light' ? 'dark' : 'light'
+  theme.value = theme.value === "light" ? "dark" : "light";
 }
 
 function goBack() {
-  router.back()
+  router.back();
 }
 </script>
 
@@ -64,7 +64,7 @@ function goBack() {
       </svg>
     </button>
     <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
-    <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
+    <button @click="toggleTheme">{{ theme === "dark" ? "☀️" : "🌙" }}</button>
     <select v-model="locale" class="lang-select" aria-label="Language">
       <option v-for="lang in languages" :key="lang.code" :value="lang.code">
         {{ lang.flag }}

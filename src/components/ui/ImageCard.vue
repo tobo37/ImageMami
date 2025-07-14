@@ -1,6 +1,6 @@
 <template>
   <div class="image-card" :class="{ marked }">
-    <img :src="src" alt="duplicate"/>
+    <img :src="src" alt="duplicate" />
     <p class="path">{{ path }}</p>
     <div class="actions">
       <button @click="$emit('decision', 'keep')" class="keep">

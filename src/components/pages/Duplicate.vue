@@ -53,9 +53,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "vue-i18n";
-import HamsterLoader from "./HamsterLoader.vue";
-import ImageCard from "./ImageCard.vue";
-import DeleteConfirmModal from "./DeleteConfirmModal.vue";
+import HamsterLoader from "../ui/HamsterLoader.vue";
+import ImageCard from "../ui/ImageCard.vue";
+import DeleteConfirmModal from "../ui/DeleteConfirmModal.vue";
 
 interface DuplicateGroup {
   tag: string;

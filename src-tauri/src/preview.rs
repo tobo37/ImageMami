@@ -1,5 +1,4 @@
-use std::io::Cursor;
-use image::io::Reader as ImageReader;
+use image::ImageReader;
 use image::codecs::jpeg::JpegEncoder;
 use base64::Engine;
 

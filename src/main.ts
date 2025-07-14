@@ -17,7 +17,7 @@ const messages = {
     },
     common: {
       keep: "keep",
-      delete: "delte",
+      delete: "delete",
       yes: "Yes",
       no: "No",
     },

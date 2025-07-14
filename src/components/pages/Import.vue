@@ -3,8 +3,8 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 
-import DestinationSelector from "./DestinationSelector.vue";
-import DeviceCard from "./DeviceCard.vue";
+import DestinationSelector from "../ui/DestinationSelector.vue";
+import DeviceCard from "../ui/DeviceCard.vue";
 
 interface Device {
   name: string;

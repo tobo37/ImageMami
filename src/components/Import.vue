@@ -1,50 +1,72 @@
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { open }   from '@tauri-apps/plugin-dialog'
-import { invoke } from '@tauri-apps/api/core'
+import { ref, onMounted, onUnmounted } from "vue";
+import { open } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
 
-import DestinationSelector from './DestinationSelector.vue'
-import DeviceCard           from './DeviceCard.vue'
+import DestinationSelector from "./DestinationSelector.vue";
+import DeviceCard from "./DeviceCard.vue";
 
-interface Device { name: string; path: string; total: number }
+interface Device {
+  name: string;
+  path: string;
+  total: number;
+}
 
-const destPath  = ref<string | null>(null)
-const devices   = ref<Device[]>([])
-const busyPath  = ref<string | null>(null)
+const destPath = ref<string | null>(null);
+const devices = ref<Device[]>([]);
+const busyPath = ref<string | null>(null);
+let pollTimer: number | null = null;
 
 onMounted(() => {
-  destPath.value = localStorage.getItem('importDest')
-  loadDevices()
-})
+  destPath.value = localStorage.getItem("importDest");
+  loadDevices();
+});
 
-async function chooseDest () {
-  const selected = await open({ directory: true, multiple: false })
-  if (!selected) return
-  const path = Array.isArray(selected) ? selected[0] : selected
-  destPath.value = path
-  localStorage.setItem('importDest', path)
+onUnmounted(() => {
+  if (pollTimer !== null) clearTimeout(pollTimer);
+});
+
+async function chooseDest() {
+  const selected = await open({ directory: true, multiple: false });
+  if (!selected) return;
+  const path = Array.isArray(selected) ? selected[0] : selected;
+  destPath.value = path;
+  localStorage.setItem("importDest", path);
 }
 
-async function loadDevices () {
-  devices.value = await invoke<Device[]>('list_external_devices')
+async function loadDevices() {
+  devices.value = await invoke<Device[]>("list_external_devices");
+  scheduleNext();
 }
 
-async function copyDevice (path: string) {
-  if (!destPath.value) return
-  busyPath.value = path
+function scheduleNext() {
+  if (pollTimer !== null) clearTimeout(pollTimer);
+  const delay = devices.value.length === 0 ? 1000 : 5000;
+  pollTimer = window.setTimeout(loadDevices, delay);
+}
+
+async function copyDevice(path: string) {
+  if (!destPath.value) return;
+  busyPath.value = path;
   try {
-    await invoke('import_device', { devicePath: path, destPath: destPath.value })
+    await invoke("import_device", {
+      devicePath: path,
+      destPath: destPath.value,
+    });
   } finally {
-    busyPath.value = null
+    busyPath.value = null;
   }
 }
 
-function formatSize (bytes: number) {
-  const units = ['B','KB','MB','GB','TB']
-  let size = bytes, i = 0
-  while (size >= 1024 && i < units.length - 1) { size /= 1024; i++ }
-  return `${size.toFixed(1)} ${units[i]}`
+function formatSize(bytes: number) {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let size = bytes,
+    i = 0;
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024;
+    i++;
+  }
+  return `${size.toFixed(1)} ${units[i]}`;
 }
 </script>
 
@@ -55,14 +77,15 @@ function formatSize (bytes: number) {
       :path="destPath"
       :label="$t('import.destination')"
       :choose-text="$t('import.choose')"
-      @choose="chooseDest" />
+      @choose="chooseDest"
+    />
 
     <!-- Geräte-Liste -->
     <section>
       <header class="section-header">
-        <h2>{{ $t('import.devices') }}</h2>
+        <h2>{{ $t("import.devices") }}</h2>
         <button class="btn ghost" @click="loadDevices">
-          <span class="icon-rotate-cw" /> {{ $t('import.refresh') }}
+          <span class="icon-rotate-cw" /> {{ $t("import.refresh") }}
         </button>
       </header>
 
@@ -75,7 +98,8 @@ function formatSize (bytes: number) {
           :busy="busyPath === d.path"
           :copy-text="$t('import.copy')"
           :format-size="formatSize"
-          @import="copyDevice" />
+          @import="copyDevice"
+        />
       </div>
 
       <p v-else class="placeholder">-</p>
@@ -84,21 +108,31 @@ function formatSize (bytes: number) {
 </template>
 
 <style scoped>
-.import-view { display: flex; flex-direction: column; gap: 2rem; }
+.import-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
 .section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
 }
 .devices-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.2rem;
 }
-.placeholder { opacity: .6; }
+.placeholder {
+  opacity: 0.6;
+}
 .btn.ghost {
   background: transparent;
   color: var(--accent-color);
   border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
 }
-.icon-rotate-cw::before { content: '⟳'; } /* simple icon-stub */
+.icon-rotate-cw::before {
+  content: "⟳";
+} /* simple icon-stub */
 </style>

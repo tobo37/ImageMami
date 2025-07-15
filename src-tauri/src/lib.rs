@@ -24,6 +24,7 @@ pub fn run() {
             greet,
             duplicate::scan_folder_stream,
             duplicate::delete_files,
+            duplicate::cancel_scan,
             importer::list_external_devices,
             importer::list_all_disks,
             importer::import_device,

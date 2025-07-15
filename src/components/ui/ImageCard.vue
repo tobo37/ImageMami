@@ -3,7 +3,7 @@
     <img :src="src" alt="duplicate" />
     <p class="path">{{ path }}</p>
     <div class="actions">
-      <button @click="$emit('decision', 'keep')" class="keep">
+      <button v-if="marked" @click="$emit('decision', 'keep')" class="keep">
         {{ keepText }}
       </button>
       <button @click="$emit('decision', 'delete')" class="delete">

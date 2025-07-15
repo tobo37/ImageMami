@@ -14,6 +14,9 @@ const messages = {
       confirmDelete: "Are you sure you want to delete {count} files?",
       dragDropInstruction: "Drag and drop",
       orClickToSelect: "or click",
+      tags: {
+        hash: "Exact match",
+      },
     },
     common: {
       keep: "keep",
@@ -45,6 +48,9 @@ const messages = {
       confirmDelete: "Möchtest du wirklich {count} Dateien löschen?",
       dragDropInstruction: "Ziehe einen Ordner hierher",
       orClickToSelect: "oder klicke hier, um einen Ordner auszuwählen",
+      tags: {
+        hash: "Absolut identisch",
+      },
     },
     common: {
       keep: "Behalten",

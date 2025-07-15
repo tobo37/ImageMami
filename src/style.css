@@ -4,11 +4,11 @@
 :root {
   /* Grundfarben – Light */
   --bg-gradient-start: #e8ecf7;
-  --bg-gradient-end:   #f5f7fc;
-  --text-color:        #1d1d1f;
-  --card-bg:           rgba(255, 255, 255, 0.7);
-  --border-color:      rgba(0, 0, 0, 0.08);
-  --accent-color:      #4b8dff;      /* neues Blau */
+  --bg-gradient-end: #f5f7fc;
+  --text-color: #1d1d1f;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --accent-color: #4b8dff; /* neues Blau */
 
   /* Effekte */
   --radius-lg: 16px;
@@ -17,13 +17,13 @@
 }
 
 /* Dark Mode */
-[data-theme='dark'] {
+[data-theme="dark"] {
   --bg-gradient-start: #0d1224;
-  --bg-gradient-end:   #1b2036;
-  --text-color:        #f5f5f7;
-  --card-bg:           rgba(44, 44, 46, 0.6);
-  --border-color:      rgba(255, 255, 255, 0.1);
-  --accent-color:      #4b8dff;
+  --bg-gradient-end: #1b2036;
+  --text-color: #f5f5f7;
+  --card-bg: rgba(44, 44, 46, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --accent-color: #4b8dff;
   --shadow-soft: 0 6px 24px rgba(0, 0, 0, 0.4);
 }
 
@@ -32,12 +32,14 @@
    ──────────────── */
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg,
-              var(--bg-gradient-start) 0%,
-              var(--bg-gradient-end)   100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-gradient-start) 0%,
+    var(--bg-gradient-end) 100%
+  );
   color: var(--text-color);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -74,8 +76,8 @@ a {
   align-items: center;
   backdrop-filter: blur(var(--blur-backdrop));
   box-shadow: var(--shadow-soft);
-  transition: transform 0.25s ease, box-shadow 0.25s ease,
-              background 0.25s ease, color 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease,
+    color 0.25s ease;
 }
 
 .card:hover {
@@ -121,7 +123,7 @@ h1 {
 
 .view {
   position: relative;
-  max-width: 900px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 1.5rem;
 }
@@ -173,10 +175,12 @@ html {
 }
 
 @keyframes bannerMove {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(-50%, -50%) rotate(-15deg) scale(1);
   }
   50% {
-    transform: translate(calc(-50% + 10px), calc(-50% - 10px)) rotate(-15deg) scale(1.2);
+    transform: translate(calc(-50% + 10px), calc(-50% - 10px)) rotate(-15deg)
+      scale(1.2);
   }
 }

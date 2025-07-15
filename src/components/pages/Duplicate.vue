@@ -16,7 +16,7 @@
 
     <div v-if="duplicates.length" class="duplicate-list">
       <div v-for="d in duplicates" :key="d.hash" class="duplicate-group">
-        <h3>{{ d.tag }}</h3>
+        <h3>{{ tagText(d.tag) }}</h3>
         <div class="image-pair">
           <ImageCard
             v-for="p in d.paths"
@@ -79,6 +79,12 @@ const showConfirm = ref(false);
 const markedCount = computed(() => marked.value.length);
 let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
+
+function tagText(tag: string) {
+  const key = `duplicate.tags.${tag}`;
+  const result = t(key);
+  return result === key ? tag : result;
+}
 
 function recordDecision(tag: string, path: string, value: string) {
   let del: boolean | null;

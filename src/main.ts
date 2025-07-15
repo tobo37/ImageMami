@@ -34,7 +34,15 @@ const messages = {
       export: "Export file",
     },
     sort: { title: "Sort" },
-    blackhole: { title: "Blackhole" },
+    blackhole: {
+      title: "Blackhole",
+      scan: "Scan",
+      disks: "Drives",
+      folders: "Folders",
+      copy: "Copy",
+      cut: "Cut",
+      files: "files",
+    },
   },
   de: {
     duplicate: {
@@ -65,7 +73,15 @@ const messages = {
       export: "Datei exportieren",
     },
     sort: { title: "Sortieren" },
-    blackhole: { title: "Schwarzes Loch" },
+    blackhole: {
+      title: "Schwarzes Loch",
+      scan: "Scannen",
+      disks: "Laufwerke",
+      folders: "Ordner",
+      copy: "Kopieren",
+      cut: "Ausschneiden",
+      files: "Dateien",
+    },
   },
 };
 

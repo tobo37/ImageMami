@@ -1,14 +1,14 @@
-mod duplicate;
-mod importer;
-mod file_formats;
-mod sort;
 mod blackhole;
-mod training;
+mod duplicate;
+mod file_formats;
+mod importer;
 mod preview;
+mod sort;
+mod training;
 
 pub use duplicate::DuplicateGroup;
-pub use importer::ExternalDevice;
 pub use file_formats::ALLOWED_EXTENSIONS;
+pub use importer::ExternalDevice;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -25,7 +25,10 @@ pub fn run() {
             duplicate::scan_folder_stream,
             duplicate::delete_files,
             importer::list_external_devices,
+            importer::list_all_disks,
             importer::import_device,
+            blackhole::scan_blackhole_stream,
+            blackhole::import_blackhole,
             training::record_decision,
             training::export_training,
             preview::generate_thumbnail,

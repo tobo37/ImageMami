@@ -36,6 +36,9 @@ const messages = {
       title: "Training Data",
       export: "Export file",
     },
+    home: {
+      previewBanner: "preview - wait for release",
+    },
     sort: { title: "Sort" },
     blackhole: {
       title: "Blackhole",
@@ -77,6 +80,9 @@ const messages = {
     training: {
       title: "Trainingsdaten",
       export: "Datei exportieren",
+    },
+    home: {
+      previewBanner: "Vorschau - warte auf Release",
     },
     sort: { title: "Sortieren" },
     blackhole: {

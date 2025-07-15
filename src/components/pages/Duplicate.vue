@@ -1,5 +1,9 @@
 <template>
   <div class="view" @drop.prevent="handleDrop" @dragover.prevent>
+    <select v-model="mode" class="mode-picker">
+      <option value="hash">{{ t("duplicate.modes.exact") }}</option>
+      <option value="dhash">{{ t("duplicate.modes.perceptual") }}</option>
+    </select>
     <div
       class="dropzone"
       v-if="!duplicates.length && !busy"
@@ -28,7 +32,7 @@
             :marked="marked.includes(p)"
             :keep-text="t('common.keep')"
             :delete-text="t('common.delete')"
-            @decision="(v) => recordDecision(d.tag, p, v)"
+            @decision="(v: string) => recordDecision(d.tag, p, v)"
           />
         </div>
       </div>
@@ -78,6 +82,7 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
+const mode = ref("hash");
 const showConfirm = ref(false);
 const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
@@ -248,6 +253,9 @@ onBeforeUnmount(() => {
   font-weight: bold;
 }
 
+.mode-picker {
+  margin-bottom: 1rem;
+  }
 button.ghost {
   background: transparent;
   color: var(--accent-color);

@@ -23,6 +23,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             duplicate::scan_folder_stream,
+            duplicate::scan_folder_dhash_stream,
             duplicate::delete_files,
             duplicate::cancel_scan,
             importer::list_external_devices,

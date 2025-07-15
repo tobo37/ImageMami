@@ -1947,6 +1947,7 @@ dependencies = [
  "chrono",
  "dirs",
  "image",
+ "once_cell",
  "serde",
  "serde_json",
  "sysinfo",

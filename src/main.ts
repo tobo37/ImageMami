@@ -14,8 +14,13 @@ const messages = {
       confirmDelete: "Are you sure you want to delete {count} files?",
       dragDropInstruction: "Drag and drop",
       orClickToSelect: "or click",
+      modes: {
+        exact: "Exact",
+        perceptual: "Perceptual",
+      },
       tags: {
         hash: "Exact match",
+        dhash: "Perceptual match",
       },
     },
     common: {
@@ -60,8 +65,13 @@ const messages = {
       confirmDelete: "Möchtest du wirklich {count} Dateien löschen?",
       dragDropInstruction: "Ziehe einen Ordner hierher",
       orClickToSelect: "oder klicke hier, um einen Ordner auszuwählen",
+      modes: {
+        exact: "Exakt",
+        perceptual: "Perzeptuell",
+      },
       tags: {
         hash: "Absolut identisch",
+        dhash: "Ähnlich",
       },
     },
     common: {

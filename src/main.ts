@@ -28,6 +28,7 @@ const messages = {
       delete: "delete",
       yes: "Yes",
       no: "No",
+      cancel: "Cancel",
     },
     import: {
       title: "Import",
@@ -41,8 +42,19 @@ const messages = {
       title: "Training Data",
       export: "Export file",
     },
+    home: {
+      previewBanner: "preview - wait for release",
+    },
     sort: { title: "Sort" },
-    blackhole: { title: "Blackhole" },
+    blackhole: {
+      title: "Blackhole",
+      scan: "Scan",
+      disks: "Drives",
+      folders: "Folders",
+      copy: "Copy",
+      cut: "Cut",
+      files: "files",
+    },
   },
   de: {
     duplicate: {
@@ -67,6 +79,7 @@ const messages = {
       delete: "Löschen",
       yes: "Ja",
       no: "Nein",
+      cancel: "Abbrechen",
     },
     import: {
       title: "Importieren",
@@ -80,8 +93,19 @@ const messages = {
       title: "Trainingsdaten",
       export: "Datei exportieren",
     },
+    home: {
+      previewBanner: "Vorschau - warte auf Release",
+    },
     sort: { title: "Sortieren" },
-    blackhole: { title: "Schwarzes Loch" },
+    blackhole: {
+      title: "Schwarzes Loch",
+      scan: "Scannen",
+      disks: "Laufwerke",
+      folders: "Ordner",
+      copy: "Kopieren",
+      cut: "Ausschneiden",
+      files: "Dateien",
+    },
   },
 };
 

@@ -1,9 +1,9 @@
-use serde::Serialize;
-use sysinfo::Disks;
-use std::{fs, path::PathBuf};
-use walkdir::WalkDir;
-use chrono::prelude::*;
 use crate::file_formats::ALLOWED_EXTENSIONS;
+use chrono::prelude::*;
+use serde::Serialize;
+use std::{fs, path::PathBuf};
+use sysinfo::Disks;
+use walkdir::WalkDir;
 
 #[derive(Serialize)]
 pub struct ExternalDevice {
@@ -11,7 +11,6 @@ pub struct ExternalDevice {
     pub path: String,
     pub total: u64,
 }
-
 
 #[tauri::command]
 pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
@@ -25,6 +24,21 @@ pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
             let total = disk.total_space();
             result.push(ExternalDevice { name, path, total });
         }
+    }
+
+    Ok(result)
+}
+
+#[tauri::command]
+pub fn list_all_disks() -> Result<Vec<ExternalDevice>, String> {
+    let disks = Disks::new_with_refreshed_list();
+
+    let mut result = Vec::new();
+    for disk in disks.list() {
+        let name = disk.name().to_string_lossy().into_owned();
+        let path = disk.mount_point().to_string_lossy().into_owned();
+        let total = disk.total_space();
+        result.push(ExternalDevice { name, path, total });
     }
 
     Ok(result)
@@ -51,7 +65,10 @@ fn do_import(device: PathBuf, dest: PathBuf) -> Result<(), String> {
             .and_then(|s| s.to_str())
             .map(|s| s.to_lowercase());
         if let Some(ext) = ext {
-            if !ALLOWED_EXTENSIONS.iter().any(|ext_ok| ext_ok.eq_ignore_ascii_case(&ext)) {
+            if !ALLOWED_EXTENSIONS
+                .iter()
+                .any(|ext_ok| ext_ok.eq_ignore_ascii_case(&ext))
+            {
                 continue;
             }
         } else {

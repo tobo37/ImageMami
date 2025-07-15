@@ -1,6 +1,6 @@
 use crate::file_formats::ALLOWED_EXTENSIONS;
 use blake3::Hasher; // <-- brings `emit` into scope
-use image::{imageops::FilterType, GenericImageView};
+use image::{imageops::FilterType};
 use serde::Serialize;
 use std::{
     collections::HashMap,
@@ -9,6 +9,8 @@ use std::{
     path::{Path, PathBuf},
     time::Instant,
 };
+use std::sync::atomic::{AtomicBool, Ordering};
+use once_cell::sync::Lazy;
 use tauri::Emitter;
 use walkdir::WalkDir;
 
@@ -28,6 +30,8 @@ fn dhash_hex(path: &Path) -> Result<String, String> {
     }
     Ok(format!("{:016x}", bits))
 }
+
+static CANCEL_SCAN: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 #[derive(Serialize)]
 pub struct DuplicateGroup {
@@ -50,6 +54,7 @@ pub async fn scan_folder_stream(
     window: tauri::Window,
     path: String,
 ) -> Result<Vec<DuplicateGroup>, String> {
+    CANCEL_SCAN.store(false, Ordering::Relaxed);
     let duplicates = tauri::async_runtime::spawn_blocking(move || {
         heavy_scan_stream(window, PathBuf::from(path))
     })
@@ -83,6 +88,9 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
     let start = Instant::now();
 
     for (idx, path) in paths.into_iter().enumerate() {
+        if CANCEL_SCAN.load(Ordering::Relaxed) {
+            break;
+        }
         let mut reader = BufReader::new(File::open(&path).map_err(|e| e.to_string())?);
 
         let mut hasher = Hasher::new();
@@ -116,15 +124,19 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
         );
     }
 
-    Ok(map
-        .into_iter()
-        .filter(|(_, v)| v.len() > 1)
-        .map(|(hash, paths)| DuplicateGroup {
-            tag: "hash".to_string(),
-            hash,
-            paths,
-        })
-        .collect())
+    CANCEL_SCAN.store(false, Ordering::Relaxed);
+
+    Ok(
+        map
+            .into_iter()
+            .filter(|(_, v)| v.len() > 1)
+            .map(|(hash, paths)| DuplicateGroup {
+                tag: "hash".to_string(),
+                hash,
+                paths,
+            })
+            .collect(),
+    )
 }
 
 #[tauri::command]
@@ -207,4 +219,8 @@ fn heavy_scan_dhash_stream(
             paths,
         })
         .collect())
+    }
+
+pub fn cancel_scan() {
+    CANCEL_SCAN.store(true, Ordering::Relaxed);
 }

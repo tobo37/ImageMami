@@ -2,9 +2,11 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 import DestinationSelector from "../ui/DestinationSelector.vue";
 import DeviceCard from "../ui/DeviceCard.vue";
+import HamsterLoader from "../ui/HamsterLoader.vue";
 
 interface Device {
   name: string;
@@ -12,9 +14,16 @@ interface Device {
   total: number;
 }
 
+interface ImportProgress {
+  copied: number;
+  total: number;
+}
+
 const destPath = ref<string | null>(null);
 const devices = ref<Device[]>([]);
 const busyPath = ref<string | null>(null);
+const progress = ref(0);
+let unlisten: UnlistenFn | null = null;
 let pollTimer: number | null = null;
 
 onMounted(() => {
@@ -24,6 +33,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (pollTimer !== null) clearTimeout(pollTimer);
+  if (unlisten) unlisten();
 });
 
 async function chooseDest() {
@@ -48,6 +58,15 @@ function scheduleNext() {
 async function copyDevice(path: string) {
   if (!destPath.value) return;
   busyPath.value = path;
+  progress.value = 0;
+  if (unlisten) {
+    unlisten();
+    unlisten = null;
+  }
+  unlisten = await listen<ImportProgress>("import_progress", (e) => {
+    const { copied, total } = e.payload;
+    progress.value = total ? copied / total : 1;
+  });
   try {
     await invoke("import_device", {
       devicePath: path,
@@ -55,6 +74,10 @@ async function copyDevice(path: string) {
     });
   } finally {
     busyPath.value = null;
+    if (unlisten) {
+      unlisten();
+      unlisten = null;
+    }
   }
 }
 
@@ -104,6 +127,9 @@ function formatSize(bytes: number) {
 
       <p v-else class="placeholder">-</p>
     </section>
+
+    <HamsterLoader v-if="busyPath" />
+    <div v-if="busyPath" class="status">{{ Math.round(progress * 100) }}%</div>
   </div>
 </template>
 
@@ -126,6 +152,11 @@ function formatSize(bytes: number) {
 }
 .placeholder {
   opacity: 0.6;
+}
+
+.status {
+  text-align: center;
+  margin-top: 0.5rem;
 }
 .btn.ghost {
   background: transparent;

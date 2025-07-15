@@ -3,6 +3,7 @@ use sysinfo::Disks;
 use std::{fs, path::PathBuf};
 use walkdir::WalkDir;
 use chrono::prelude::*;
+use tauri::Window;
 use crate::file_formats::ALLOWED_EXTENSIONS;
 
 #[derive(Serialize)]
@@ -10,6 +11,12 @@ pub struct ExternalDevice {
     pub name: String,
     pub path: String,
     pub total: u64,
+}
+
+#[derive(Serialize, Clone)]
+pub struct ImportProgress {
+    pub copied: usize,
+    pub total: usize,
 }
 
 
@@ -31,32 +38,35 @@ pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
 }
 
 #[tauri::command]
-pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
+pub async fn import_device(
+    window: Window,
+    device_path: String,
+    dest_path: String,
+) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
-        do_import(PathBuf::from(device_path), PathBuf::from(dest_path))
+        do_import(window, PathBuf::from(device_path), PathBuf::from(dest_path))
     })
     .await
     .map_err(|e| e.to_string())??;
     Ok(())
 }
 
-fn do_import(device: PathBuf, dest: PathBuf) -> Result<(), String> {
-    for entry in WalkDir::new(&device).into_iter().filter_map(|e| e.ok()) {
-        if !entry.file_type().is_file() {
-            continue;
-        }
-        let ext = entry
-            .path()
-            .extension()
-            .and_then(|s| s.to_str())
-            .map(|s| s.to_lowercase());
-        if let Some(ext) = ext {
-            if !ALLOWED_EXTENSIONS.iter().any(|ext_ok| ext_ok.eq_ignore_ascii_case(&ext)) {
-                continue;
-            }
-        } else {
-            continue;
-        }
+fn do_import(window: Window, device: PathBuf, dest: PathBuf) -> Result<(), String> {
+    let entries: Vec<_> = WalkDir::new(&device)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+        .filter(|e| {
+            e.path()
+                .extension()
+                .and_then(|s| s.to_str())
+                .map(|ext| ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)))
+                .unwrap_or(false)
+        })
+        .collect();
+
+    let total = entries.len();
+    for (idx, entry) in entries.into_iter().enumerate() {
 
         let metadata = entry.metadata().map_err(|e| e.to_string())?;
         let mtime = metadata.modified().map_err(|e| e.to_string())?;
@@ -70,6 +80,13 @@ fn do_import(device: PathBuf, dest: PathBuf) -> Result<(), String> {
         if !target.exists() {
             fs::copy(entry.path(), &target).map_err(|e| e.to_string())?;
         }
+        let _ = window.emit(
+            "import_progress",
+            ImportProgress {
+                copied: idx + 1,
+                total,
+            },
+        );
     }
 
     Ok(())

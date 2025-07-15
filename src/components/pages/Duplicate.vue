@@ -31,9 +31,11 @@
       </div>
     </div>
 
-    <button v-if="markedCount" class="delete-button" @click="deleteMarked">
-      {{ t("duplicate.deleteMarked") }}
-    </button>
+    <div v-if="markedCount" class="delete-bar">
+      <button class="delete-button" @click="deleteMarked">
+        {{ t("duplicate.deleteMarked") }}
+      </button>
+    </div>
 
     <DeleteConfirmModal
       :visible="showConfirm"
@@ -201,8 +203,19 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
+.delete-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 0.5rem;
+}
+
 .delete-button {
-  margin-top: 2rem;
   background: red;
   color: white;
   padding: 0.75rem 1.5rem;

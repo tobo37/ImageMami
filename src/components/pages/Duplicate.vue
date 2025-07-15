@@ -1,5 +1,9 @@
 <template>
   <div class="view" @drop.prevent="handleDrop" @dragover.prevent>
+    <select v-model="mode" class="mode-picker">
+      <option value="hash">{{ t("duplicate.modes.exact") }}</option>
+      <option value="dhash">{{ t("duplicate.modes.perceptual") }}</option>
+    </select>
     <div
       class="dropzone"
       v-if="!duplicates.length && !busy"
@@ -75,6 +79,7 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
+const mode = ref("hash");
 const showConfirm = ref(false);
 const markedCount = computed(() => marked.value.length);
 let unlisten: UnlistenFn | null = null;
@@ -114,7 +119,11 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    duplicates.value = await invoke<DuplicateGroup[]>("scan_folder_stream", {
+    const cmd =
+      mode.value === "dhash"
+        ? "scan_folder_dhash_stream"
+        : "scan_folder_stream";
+    duplicates.value = await invoke<DuplicateGroup[]>(cmd, {
       path,
     });
   } finally {
@@ -227,5 +236,9 @@ onBeforeUnmount(() => {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: bold;
+}
+
+.mode-picker {
+  margin-bottom: 1rem;
 }
 </style>

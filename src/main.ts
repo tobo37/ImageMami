@@ -23,6 +23,7 @@ const messages = {
       delete: "delete",
       yes: "Yes",
       no: "No",
+      cancel: "Cancel",
     },
     import: {
       title: "Import",
@@ -57,6 +58,7 @@ const messages = {
       delete: "Löschen",
       yes: "Ja",
       no: "Nein",
+      cancel: "Abbrechen",
     },
     import: {
       title: "Importieren",

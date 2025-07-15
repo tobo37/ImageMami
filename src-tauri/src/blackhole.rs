@@ -2,6 +2,7 @@ use chrono::prelude::*;
 use serde::Serialize;
 use std::{collections::HashMap, fs, path::PathBuf};
 use walkdir::WalkDir;
+use tauri::Emitter;
 
 use crate::file_formats::ALLOWED_EXTENSIONS;
 

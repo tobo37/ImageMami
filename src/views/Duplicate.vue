@@ -35,9 +35,7 @@
           :marked="marked"
           :delete-text="t('common.delete')"
           :keep-text="t('common.keep')"
-          @decision="
-            (path: string, v: string) => recordDecision(d.tag, path, v)
-          "
+          @decision="(path: string, v: string) => updateMarked(path, v)"
         />
       </div>
     </div>
@@ -99,12 +97,7 @@ function tagText(tag: string) {
   return result === key ? tag : result;
 }
 
-function recordDecision(tag: string, path: string, value: string) {
-  let del: boolean | null;
-  if (value === 'keep') del = false;
-  else if (value === 'delete') del = true;
-  else del = null;
-  invoke('record_decision', { tag, path, delete: del });
+function updateMarked(path: string, value: string) {
   if (value === 'delete') {
     if (!marked.value.includes(path)) marked.value.push(path);
   } else {

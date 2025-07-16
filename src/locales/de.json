@@ -31,10 +31,6 @@
     "refresh": "Aktualisieren",
     "copy": "Bilder kopieren"
   },
-  "training": {
-    "title": "Trainingsdaten",
-    "export": "Datei exportieren"
-  },
   "sort": {
     "title": "Sortieren",
     "choose": "Ordner wählen",

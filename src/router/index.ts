@@ -4,7 +4,6 @@ import Duplicate from '../views/Duplicate.vue';
 import ImportView from '../views/Import.vue';
 import SortView from '../views/Sort.vue';
 import Blackhole from '../views/Blackhole.vue';
-import TrainingData from '../views/TrainingData.vue';
 import Home from '../views/Home.vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -13,7 +12,6 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/import', name: 'import', component: ImportView },
   { path: '/sort', name: 'sort', component: SortView },
   { path: '/blackhole', name: 'blackhole', component: Blackhole },
-  { path: '/training', name: 'training', component: TrainingData },
 ];
 
 const router = createRouter({

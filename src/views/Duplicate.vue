@@ -7,11 +7,11 @@
       @choose="chooseDest"
     />
     <div class="mode-picker">
-      <label>
+      <label :title="t('duplicate.exactTooltip')">
         <input type="checkbox" value="hash" v-model="modes" />
         {{ t('duplicate.modes.exact') }}
       </label>
-      <label>
+      <label :title="t('duplicate.perceptualTooltip')">
         <input type="checkbox" value="dhash" v-model="modes" />
         {{ t('duplicate.modes.perceptual') }}
       </label>

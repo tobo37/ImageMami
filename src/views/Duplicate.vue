@@ -30,17 +30,15 @@
     <div v-if="duplicates.length" class="duplicate-list">
       <div v-for="d in duplicates" :key="d.hash" class="duplicate-group">
         <h3>{{ tagText(d.tag) }}</h3>
-        <div class="image-pair">
-          <ImageCard
-            v-for="p in d.paths"
-            :key="p"
-            :path="p"
-            :marked="marked.includes(p)"
-            :keep-text="t('common.keep')"
-            :delete-text="t('common.delete')"
-            @decision="(v: string) => recordDecision(d.tag, p, v)"
-          />
-        </div>
+        <DuplicateGroupCard
+          :group="d"
+          :marked="marked"
+          :delete-text="t('common.delete')"
+          :keep-text="t('common.keep')"
+          @decision="
+            (path: string, v: string) => recordDecision(d.tag, path, v)
+          "
+        />
       </div>
     </div>
 
@@ -69,7 +67,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useI18n } from 'vue-i18n';
 import HamsterLoader from '../components/ui/HamsterLoader.vue';
-import ImageCard from '../components/ui/ImageCard.vue';
+import DuplicateGroupCard from '../components/ui/DuplicateGroupCard.vue';
 import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
 
 interface DuplicateGroup {
@@ -242,12 +240,6 @@ onBeforeUnmount(() => {
 .duplicate-group h3 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
-}
-
-.image-pair {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .delete-bar {

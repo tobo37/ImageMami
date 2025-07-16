@@ -50,23 +50,7 @@ pub struct DuplicateProgress {
 }
 
 #[tauri::command]
-pub async fn scan_folder_stream(
-    window: tauri::Window,
-    path: String,
-) -> Result<Vec<DuplicateGroup>, String> {
-    scan_folder_multi_stream(window, path, vec!["hash".into()]).await
-}
-
-#[tauri::command]
-pub async fn scan_folder_dhash_stream(
-    window: tauri::Window,
-    path: String,
-) -> Result<Vec<DuplicateGroup>, String> {
-    scan_folder_multi_stream(window, path, vec!["dhash".into()]).await
-}
-
-#[tauri::command]
-pub async fn scan_folder_multi_stream(
+pub async fn scan_folder_stream_multi(
     window: tauri::Window,
     path: String,
     tags: Vec<String>,

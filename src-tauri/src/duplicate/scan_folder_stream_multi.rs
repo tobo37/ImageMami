@@ -44,7 +44,11 @@ fn blake3_mmap(path: &Path) -> Result<String, String> {
 fn file_age_seconds(path: &str) -> u64 {
     std::fs::metadata(path)
         .and_then(|m| m.modified())
-        .and_then(|t| std::time::SystemTime::now().duration_since(t))
+        .and_then(|t| {
+            std::time::SystemTime::now()
+                .duration_since(t)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        })
         .map(|d| d.as_secs())
         .unwrap_or(0)
 }

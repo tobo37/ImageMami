@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { useSettingsStore } from "../../stores/settings";
-import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useSettingsStore } from '../stores/settings';
+import { open } from '@tauri-apps/plugin-dialog';
+import { invoke } from '@tauri-apps/api/core';
 
-import DestinationSelector from "../ui/DestinationSelector.vue";
-import DeviceCard from "../ui/DeviceCard.vue";
+import DestinationSelector from '../components/ui/DestinationSelector.vue';
+import DeviceCard from '../components/ui/DeviceCard.vue';
 
 interface Device {
   name: string;
@@ -34,7 +34,7 @@ async function chooseDest() {
 }
 
 async function loadDevices() {
-  devices.value = await invoke<Device[]>("list_external_devices");
+  devices.value = await invoke<Device[]>('list_external_devices');
   scheduleNext();
 }
 
@@ -48,7 +48,7 @@ async function copyDevice(path: string) {
   if (!settings.importDestination) return;
   busyPath.value = path;
   try {
-    await invoke("import_device", {
+    await invoke('import_device', {
       devicePath: path,
       destPath: settings.importDestination,
     });
@@ -58,7 +58,7 @@ async function copyDevice(path: string) {
 }
 
 function formatSize(bytes: number) {
-  const units = ["B", "KB", "MB", "GB", "TB"];
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes,
     i = 0;
   while (size >= 1024 && i < units.length - 1) {
@@ -82,9 +82,9 @@ function formatSize(bytes: number) {
     <!-- Geräte-Liste -->
     <section>
       <header class="section-header">
-        <h2>{{ $t("import.devices") }}</h2>
+        <h2>{{ $t('import.devices') }}</h2>
         <button class="btn ghost" @click="loadDevices">
-          <span class="icon-rotate-cw" /> {{ $t("import.refresh") }}
+          <span class="icon-rotate-cw" /> {{ $t('import.refresh') }}
         </button>
       </header>
 
@@ -132,6 +132,6 @@ function formatSize(bytes: number) {
   border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
 }
 .icon-rotate-cw::before {
-  content: "⟳";
+  content: '⟳';
 } /* simple icon-stub */
 </style>

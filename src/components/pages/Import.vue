@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { useSettingsStore } from "../../stores/settings";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -12,13 +13,12 @@ interface Device {
   total: number;
 }
 
-const destPath = ref<string | null>(null);
+const settings = useSettingsStore();
 const devices = ref<Device[]>([]);
 const busyPath = ref<string | null>(null);
 let pollTimer: number | null = null;
 
 onMounted(() => {
-  destPath.value = localStorage.getItem("importDest");
   loadDevices();
 });
 
@@ -30,8 +30,7 @@ async function chooseDest() {
   const selected = await open({ directory: true, multiple: false });
   if (!selected) return;
   const path = Array.isArray(selected) ? selected[0] : selected;
-  destPath.value = path;
-  localStorage.setItem("importDest", path);
+  settings.setImportDestination(path);
 }
 
 async function loadDevices() {
@@ -46,12 +45,12 @@ function scheduleNext() {
 }
 
 async function copyDevice(path: string) {
-  if (!destPath.value) return;
+  if (!settings.importDestination) return;
   busyPath.value = path;
   try {
     await invoke("import_device", {
       devicePath: path,
-      destPath: destPath.value,
+      destPath: settings.importDestination,
     });
   } finally {
     busyPath.value = null;
@@ -74,7 +73,7 @@ function formatSize(bytes: number) {
   <div class="view import-view">
     <!-- Zielordner auswählen -->
     <DestinationSelector
-      :path="destPath"
+      :path="settings.importDestination"
       :label="$t('import.destination')"
       :choose-text="$t('import.choose')"
       @choose="chooseDest"
@@ -94,7 +93,7 @@ function formatSize(bytes: number) {
           v-for="d in devices"
           :key="d.path"
           :device="d"
-          :disabled="!destPath"
+          :disabled="!settings.importDestination"
           :busy="busyPath === d.path"
           :copy-text="$t('import.copy')"
           :format-size="formatSize"

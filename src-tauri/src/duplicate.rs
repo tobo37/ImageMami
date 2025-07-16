@@ -1,7 +1,9 @@
 use crate::file_formats::ALLOWED_EXTENSIONS;
 use blake3::Hasher; // <-- brings `emit` into scope
-use image::{imageops::FilterType};
+use image::imageops::FilterType;
+use once_cell::sync::Lazy;
 use serde::Serialize;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::{
     collections::HashMap,
     fs::File,
@@ -9,8 +11,6 @@ use std::{
     path::{Path, PathBuf},
     time::Instant,
 };
-use std::sync::atomic::{AtomicBool, Ordering};
-use once_cell::sync::Lazy;
 use tauri::Emitter;
 use walkdir::WalkDir;
 
@@ -126,17 +126,15 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
 
     CANCEL_SCAN.store(false, Ordering::Relaxed);
 
-    Ok(
-        map
-            .into_iter()
-            .filter(|(_, v)| v.len() > 1)
-            .map(|(hash, paths)| DuplicateGroup {
-                tag: "hash".to_string(),
-                hash,
-                paths,
-            })
-            .collect(),
-    )
+    Ok(map
+        .into_iter()
+        .filter(|(_, v)| v.len() > 1)
+        .map(|(hash, paths)| DuplicateGroup {
+            tag: "hash".to_string(),
+            hash,
+            paths,
+        })
+        .collect())
 }
 
 #[tauri::command]
@@ -219,8 +217,9 @@ fn heavy_scan_dhash_stream(
             paths,
         })
         .collect())
-    }
+}
 
+#[tauri::command]
 pub fn cancel_scan() {
     CANCEL_SCAN.store(true, Ordering::Relaxed);
 }

@@ -8,7 +8,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri-build": "NO_STRIP=true tauri build --verbose"
+    "tauri-build": "NO_STRIP=true tauri build --verbose",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

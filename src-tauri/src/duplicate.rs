@@ -54,17 +54,42 @@ pub async fn scan_folder_stream(
     window: tauri::Window,
     path: String,
 ) -> Result<Vec<DuplicateGroup>, String> {
+    scan_folder_multi_stream(window, path, vec!["hash".into()]).await
+}
+
+#[tauri::command]
+pub async fn scan_folder_dhash_stream(
+    window: tauri::Window,
+    path: String,
+) -> Result<Vec<DuplicateGroup>, String> {
+    scan_folder_multi_stream(window, path, vec!["dhash".into()]).await
+}
+
+#[tauri::command]
+pub async fn scan_folder_multi_stream(
+    window: tauri::Window,
+    path: String,
+    tags: Vec<String>,
+) -> Result<Vec<DuplicateGroup>, String> {
     CANCEL_SCAN.store(false, Ordering::Relaxed);
     let duplicates = tauri::async_runtime::spawn_blocking(move || {
-        heavy_scan_stream(window, PathBuf::from(path))
+        heavy_scan_multi_stream(window, PathBuf::from(path), tags)
     })
     .await
     .map_err(|e| e.to_string())??;
     Ok(duplicates)
 }
 
-fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<DuplicateGroup>, String> {
-    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+fn heavy_scan_multi_stream(
+    window: tauri::Window,
+    root: PathBuf,
+    tags: Vec<String>,
+) -> Result<Vec<DuplicateGroup>, String> {
+    let use_hash = tags.iter().any(|t| t == "hash");
+    let use_dhash = tags.iter().any(|t| t == "dhash");
+
+    let mut map_hash: HashMap<String, Vec<String>> = HashMap::new();
+    let mut map_dhash: HashMap<String, Vec<String>> = HashMap::new();
 
     let paths: Vec<PathBuf> = WalkDir::new(&root)
         .into_iter()
@@ -91,21 +116,30 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
         if CANCEL_SCAN.load(Ordering::Relaxed) {
             break;
         }
-        let mut reader = BufReader::new(File::open(&path).map_err(|e| e.to_string())?);
-
-        let mut hasher = Hasher::new();
-        let mut buf = [0u8; 8192];
-        loop {
-            let n = reader.read(&mut buf).map_err(|e| e.to_string())?;
-            if n == 0 {
-                break;
+        if use_hash {
+            let mut reader = BufReader::new(File::open(&path).map_err(|e| e.to_string())?);
+            let mut hasher = Hasher::new();
+            let mut buf = [0u8; 8192];
+            loop {
+                let n = reader.read(&mut buf).map_err(|e| e.to_string())?;
+                if n == 0 {
+                    break;
+                }
+                hasher.update(&buf[..n]);
             }
-            hasher.update(&buf[..n]);
+            let hash_hex = hasher.finalize().to_hex().to_string();
+            map_hash
+                .entry(hash_hex)
+                .or_default()
+                .push(path.display().to_string());
         }
-        let hash_hex = hasher.finalize().to_hex().to_string();
-        map.entry(hash_hex)
-            .or_default()
-            .push(path.display().to_string());
+        if use_dhash {
+            let hash_hex = dhash_hex(&path)?;
+            map_dhash
+                .entry(hash_hex)
+                .or_default()
+                .push(path.display().to_string());
+        }
 
         let scanned = (idx + 1) as f32;
         let progress = if total > 0.0 { scanned / total } else { 1.0 };
@@ -126,15 +160,32 @@ fn heavy_scan_stream(window: tauri::Window, root: PathBuf) -> Result<Vec<Duplica
 
     CANCEL_SCAN.store(false, Ordering::Relaxed);
 
-    Ok(map
-        .into_iter()
-        .filter(|(_, v)| v.len() > 1)
-        .map(|(hash, paths)| DuplicateGroup {
-            tag: "hash".to_string(),
-            hash,
-            paths,
-        })
-        .collect())
+    let mut result = Vec::new();
+    if use_hash {
+        result.extend(
+            map_hash
+                .into_iter()
+                .filter(|(_, v)| v.len() > 1)
+                .map(|(hash, paths)| DuplicateGroup {
+                    tag: "hash".to_string(),
+                    hash,
+                    paths,
+                }),
+        );
+    }
+    if use_dhash {
+        result.extend(
+            map_dhash
+                .into_iter()
+                .filter(|(_, v)| v.len() > 1)
+                .map(|(hash, paths)| DuplicateGroup {
+                    tag: "dhash".to_string(),
+                    hash,
+                    paths,
+                }),
+        );
+    }
+    Ok(result)
 }
 
 #[tauri::command]
@@ -145,79 +196,6 @@ pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-pub async fn scan_folder_dhash_stream(
-    window: tauri::Window,
-    path: String,
-) -> Result<Vec<DuplicateGroup>, String> {
-    let duplicates = tauri::async_runtime::spawn_blocking(move || {
-        heavy_scan_dhash_stream(window, PathBuf::from(path))
-    })
-    .await
-    .map_err(|e| e.to_string())??;
-    Ok(duplicates)
-}
-
-fn heavy_scan_dhash_stream(
-    window: tauri::Window,
-    root: PathBuf,
-) -> Result<Vec<DuplicateGroup>, String> {
-    let mut map: HashMap<String, Vec<String>> = HashMap::new();
-
-    let paths: Vec<PathBuf> = WalkDir::new(&root)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
-        .filter(|e| {
-            e.path()
-                .extension()
-                .and_then(|s| s.to_str())
-                .map(|ext| {
-                    ALLOWED_EXTENSIONS
-                        .iter()
-                        .any(|ok| ok.eq_ignore_ascii_case(ext))
-                })
-                .unwrap_or(false)
-        })
-        .map(|e| e.path().to_path_buf())
-        .collect();
-
-    let total = paths.len() as f32;
-    let start = Instant::now();
-
-    for (idx, path) in paths.into_iter().enumerate() {
-        let hash_hex = dhash_hex(&path)?;
-        map.entry(hash_hex)
-            .or_default()
-            .push(path.display().to_string());
-
-        let scanned = (idx + 1) as f32;
-        let progress = if total > 0.0 { scanned / total } else { 1.0 };
-        let elapsed = start.elapsed().as_secs_f32();
-        let eta = if progress > 0.0 {
-            elapsed / progress * (1.0 - progress)
-        } else {
-            0.0
-        };
-        let _ = window.emit(
-            "duplicate_progress",
-            DuplicateProgress {
-                progress,
-                eta_seconds: eta,
-            },
-        );
-    }
-
-    Ok(map
-        .into_iter()
-        .filter(|(_, v)| v.len() > 1)
-        .map(|(hash, paths)| DuplicateGroup {
-            tag: "dhash".to_string(),
-            hash,
-            paths,
-        })
-        .collect())
-}
 
 #[tauri::command]
 pub fn cancel_scan() {

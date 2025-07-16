@@ -130,19 +130,10 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    const results: DuplicateGroup[] = [];
-    if (modes.value.includes("hash")) {
-      const res = await invoke<DuplicateGroup[]>("scan_folder_stream", {
-        path,
-      });
-      if (!cancelled.value) results.push(...res);
-    }
-    if (modes.value.includes("dhash") && !cancelled.value) {
-      const res = await invoke<DuplicateGroup[]>("scan_folder_dhash_stream", {
-        path,
-      });
-      if (!cancelled.value) results.push(...res);
-    }
+    const results = await invoke<DuplicateGroup[]>("scan_folder_multi_stream", {
+      path,
+      tags: modes.value,
+    });
     if (!cancelled.value) {
       duplicates.value = results;
     }

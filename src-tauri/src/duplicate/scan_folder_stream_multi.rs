@@ -22,6 +22,8 @@ pub struct DuplicateGroup {
     pub hash: String,
     /// Paths of the duplicate files.
     pub paths: Vec<String>,
+    /// Age of each file in seconds since last modification.
+    pub ages: Vec<u64>,
 }
 
 #[derive(Serialize, Clone)]
@@ -36,6 +38,15 @@ fn blake3_mmap(path: &Path) -> Result<String, String> {
     let mmap = unsafe { MmapOptions::new().map(&file).map_err(|e| e.to_string())? };
     let hash = blake3::hash(&mmap);
     Ok(hash.to_hex().to_string())
+}
+
+/// Age of a file in seconds since last modification. Returns 0 on error.
+fn file_age_seconds(path: &str) -> u64 {
+    std::fs::metadata(path)
+        .and_then(|m| m.modified())
+        .and_then(|t| std::time::SystemTime::now().duration_since(t))
+        .map(|d| d.as_secs())
+        .unwrap_or(0)
 }
 
 /// Scan `root` for duplicates, emitting progress to the Tauri `window`.
@@ -131,7 +142,11 @@ pub fn heavy_scan_multi_stream(
         for entry in map_hash.into_iter() {
             let (hash, paths) = entry;
             if paths.len() > 1 {
-                result.push(DuplicateGroup { tag: "hash".into(), hash, paths });
+                let ages = paths
+                    .iter()
+                    .map(|p| file_age_seconds(p))
+                    .collect();
+                result.push(DuplicateGroup { tag: "hash".into(), hash, paths, ages });
             }
         }
     }
@@ -139,7 +154,11 @@ pub fn heavy_scan_multi_stream(
         for entry in map_dhash.into_iter() {
             let (hash, paths) = entry;
             if paths.len() > 1 {
-                result.push(DuplicateGroup { tag: "dhash".into(), hash, paths });
+                let ages = paths
+                    .iter()
+                    .map(|p| file_age_seconds(p))
+                    .collect();
+                result.push(DuplicateGroup { tag: "dhash".into(), hash, paths, ages });
             }
         }
     }

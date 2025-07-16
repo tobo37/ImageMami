@@ -80,6 +80,7 @@ interface DuplicateGroup {
   tag: string;
   hash: string;
   paths: string[];
+  ages: number[];
 }
 
 interface DuplicateProgress {
@@ -196,10 +197,17 @@ async function confirmDelete() {
   await invoke('delete_files', { paths: marked.value });
   showConfirm.value = false;
   duplicates.value = duplicates.value
-    .map((g) => ({
-      ...g,
-      paths: g.paths.filter((p) => !marked.value.includes(p)),
-    }))
+    .map((g) => {
+      const newPaths: string[] = [];
+      const newAges: number[] = [];
+      g.paths.forEach((p, idx) => {
+        if (!marked.value.includes(p)) {
+          newPaths.push(p);
+          newAges.push(g.ages[idx]);
+        }
+      });
+      return { ...g, paths: newPaths, ages: newAges };
+    })
     .filter((g) => g.paths.length > 0);
   marked.value = [];
 }

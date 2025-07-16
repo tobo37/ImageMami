@@ -1,10 +1,21 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from "vue";
+
+const props = defineProps<{
   path: string | null;
   label: string;
   chooseText: string;
 }>();
 const emit = defineEmits<{ choose: [] }>();
+
+const displayPath = computed(() => {
+  if (!props.path) return "-";
+  const limit = 50;
+  if (props.path.length <= limit) return props.path;
+  const start = props.path.slice(0, 25);
+  const end = props.path.slice(props.path.length - 25);
+  return `${start}...${end}`;
+});
 function onChoose() {
   emit("choose");
 }
@@ -13,10 +24,12 @@ function onChoose() {
 <template>
   <div class="card dest-card">
     <div class="dest-info">
-      <strong>{{ label }}</strong>
-      <span class="truncate">{{ path || "-" }}</span>
+      <strong>{{ props.label }}</strong>
+      <span class="dest-path" :title="props.path || '-'">{{
+        displayPath
+      }}</span>
     </div>
-    <button class="btn" @click="onChoose">{{ chooseText }}</button>
+    <button class="btn" @click="onChoose">{{ props.chooseText }}</button>
   </div>
 </template>
 
@@ -30,8 +43,9 @@ function onChoose() {
   flex-direction: column;
   gap: 0.25rem;
 }
-.truncate {
-  max-width: 320px;
+.dest-path {
+  display: block;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

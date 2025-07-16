@@ -20,6 +20,8 @@ pub struct DuplicateGroup {
     pub tag: String,
     /// Content hash of all files in this group.
     pub hash: String,
+    /// Size of each file in bytes.
+    pub size: u64,
     /// Paths of the duplicate files.
     pub paths: Vec<String>,
     /// Age of each file in seconds since last modification.
@@ -150,7 +152,8 @@ pub fn heavy_scan_multi_stream(
                     .iter()
                     .map(|p| file_age_seconds(p))
                     .collect();
-                result.push(DuplicateGroup { tag: "hash".into(), hash, paths, ages });
+                let size = std::fs::metadata(&paths[0]).map(|m| m.len()).unwrap_or(0);
+                result.push(DuplicateGroup { tag: "hash".into(), hash, size, paths, ages });
             }
         }
     }
@@ -162,7 +165,8 @@ pub fn heavy_scan_multi_stream(
                     .iter()
                     .map(|p| file_age_seconds(p))
                     .collect();
-                result.push(DuplicateGroup { tag: "dhash".into(), hash, paths, ages });
+                let size = std::fs::metadata(&paths[0]).map(|m| m.len()).unwrap_or(0);
+                result.push(DuplicateGroup { tag: "dhash".into(), hash, size, paths, ages });
             }
         }
     }

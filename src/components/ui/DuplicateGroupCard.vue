@@ -23,7 +23,13 @@ import { computed } from 'vue';
 import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
-  group: { tag: string; hash: string; paths: string[]; ages: number[] };
+  group: {
+    tag: string;
+    hash: string;
+    size: number;
+    paths: string[];
+    ages: number[];
+  };
   marked: string[];
   deleteText: string;
   keepText: string;

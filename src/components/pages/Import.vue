@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import {
+  importDevice,
+  listExternalDevices,
+  type ExternalDevice as Device,
+} from "../../services/tauriApi";
 
 import DestinationSelector from "../ui/DestinationSelector.vue";
 import DeviceCard from "../ui/DeviceCard.vue";
-
-interface Device {
-  name: string;
-  path: string;
-  total: number;
-}
 
 const destPath = ref<string | null>(null);
 const devices = ref<Device[]>([]);
@@ -35,7 +33,7 @@ async function chooseDest() {
 }
 
 async function loadDevices() {
-  devices.value = await invoke<Device[]>("list_external_devices");
+  devices.value = await listExternalDevices();
   scheduleNext();
 }
 
@@ -49,10 +47,7 @@ async function copyDevice(path: string) {
   if (!destPath.value) return;
   busyPath.value = path;
   try {
-    await invoke("import_device", {
-      devicePath: path,
-      destPath: destPath.value,
-    });
+    await importDevice(path, destPath.value);
   } finally {
     busyPath.value = null;
   }

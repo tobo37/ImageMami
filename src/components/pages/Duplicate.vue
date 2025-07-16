@@ -64,19 +64,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount } from "vue";
-import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import {
+  scanFolder as scanFolderCmd,
+  deleteFiles,
+  cancelScan as cancelScanCmd,
+  recordDecision as saveDecision,
+  type DuplicateGroup,
+} from "../../services/tauriApi";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "vue-i18n";
 import HamsterLoader from "../ui/HamsterLoader.vue";
 import ImageCard from "../ui/ImageCard.vue";
 import DeleteConfirmModal from "../ui/DeleteConfirmModal.vue";
-
-interface DuplicateGroup {
-  tag: string;
-  hash: string;
-  paths: string[];
-}
 
 interface DuplicateProgress {
   progress: number;
@@ -106,7 +106,7 @@ function recordDecision(tag: string, path: string, value: string) {
   if (value === "keep") del = false;
   else if (value === "delete") del = true;
   else del = null;
-  invoke("record_decision", { tag, path, delete: del });
+  saveDecision(tag, path, del);
   if (value === "delete") {
     if (!marked.value.includes(path)) marked.value.push(path);
   } else {
@@ -130,10 +130,7 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    const results = await invoke<DuplicateGroup[]>("scan_folder_multi_stream", {
-      path,
-      tags: modes.value,
-    });
+    const results = await scanFolderCmd(path, modes.value);
     if (!cancelled.value) {
       duplicates.value = results;
     }
@@ -166,7 +163,7 @@ function deleteMarked() {
 }
 
 async function confirmDelete() {
-  await invoke("delete_files", { paths: marked.value });
+  await deleteFiles(marked.value);
   showConfirm.value = false;
   duplicates.value = duplicates.value
     .map((g) => ({
@@ -183,7 +180,7 @@ function cancelDelete() {
 
 function cancelScan() {
   cancelled.value = true;
-  invoke("cancel_scan");
+  cancelScanCmd();
   if (unlisten) {
     unlisten();
     unlisten = null;
@@ -193,7 +190,7 @@ function cancelScan() {
 
 onBeforeUnmount(() => {
   if (unlisten) unlisten();
-  invoke("cancel_scan");
+  cancelScanCmd();
 });
 </script>
 

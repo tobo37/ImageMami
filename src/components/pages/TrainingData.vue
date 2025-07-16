@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { save } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import { exportTraining } from "../../services/tauriApi";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -14,7 +14,7 @@ async function exportFile() {
   if (!selected) return;
   busy.value = true;
   try {
-    await invoke("export_training", { path: selected });
+    await exportTraining(selected);
   } finally {
     busy.value = false;
   }

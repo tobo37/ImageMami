@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
+import { findImages, sortImages } from "../../services/tauriApi";
 import { useI18n } from "vue-i18n";
 
 import DestinationSelector from "../ui/DestinationSelector.vue";
@@ -22,14 +22,14 @@ async function chooseSource() {
 
 async function loadImages() {
   if (!srcPath.value) return;
-  images.value = await invoke<string[]>("find_images", { path: srcPath.value });
+  images.value = await findImages(srcPath.value);
 }
 
 async function startSort() {
   if (!srcPath.value) return;
   busy.value = true;
   try {
-    await invoke("sort_images", { path: srcPath.value });
+    await sortImages(srcPath.value);
     await loadImages();
   } finally {
     busy.value = false;

@@ -2,20 +2,16 @@
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import {
+  listAllDisks,
+  scanBlackhole,
+  importBlackhole,
+  type ExternalDevice as Device,
+  type BlackholeFolder,
+} from "../../services/tauriApi";
 import DestinationSelector from "../ui/DestinationSelector.vue";
 
-interface Device {
-  name: string;
-  path: string;
-  total: number;
-}
-
-interface BlackholeFolder {
-  path: string;
-  files: string[];
-}
 interface BlackholeProgress {
   progress: number;
 }
@@ -42,7 +38,7 @@ async function chooseDest() {
 }
 
 async function loadDevices() {
-  devices.value = await invoke<Device[]>("list_all_disks");
+  devices.value = await listAllDisks();
 }
 
 async function scanDisk(path: string) {
@@ -58,10 +54,7 @@ async function scanDisk(path: string) {
     progress.value = e.payload.progress;
   });
   try {
-    folders.value = await invoke<BlackholeFolder[]>("scan_blackhole_stream", {
-      rootPath: path,
-      destPath: destPath.value,
-    });
+    folders.value = await scanBlackhole(path, destPath.value);
   } finally {
     busyPath.value = null;
     if (unlisten) {
@@ -73,11 +66,7 @@ async function scanDisk(path: string) {
 
 async function importFolder(folder: BlackholeFolder, cut: boolean) {
   if (!destPath.value) return;
-  await invoke("import_blackhole", {
-    files: folder.files,
-    destPath: destPath.value,
-    cut,
-  });
+  await importBlackhole(folder.files, destPath.value, cut);
   folders.value = folders.value.filter((f) => f.path !== folder.path);
 }
 </script>

@@ -21,7 +21,7 @@
 
     <HamsterLoader v-if="busy" />
     <div v-if="busy" class="status">
-      {{ Math.round(progress * 100) }}% - ETA {{ eta.toFixed(1) }}s
+      {{ Math.round(progress * 100) }}% - ETA {{ etaDisplay }}
       <button class="ghost cancel-button" @click="cancelScan">
         {{ t('common.cancel') }}
       </button>
@@ -83,6 +83,16 @@ const duplicates = ref<DuplicateGroup[]>([]);
 const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
+const etaDisplay = computed(() => {
+  if (eta.value >= 60) {
+    const minutes = Math.floor(eta.value / 60);
+    const seconds = Math.round(eta.value % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${eta.value.toFixed(1)}s`;
+});
 const marked = ref<string[]>([]);
 const modes = ref<string[]>(['hash', 'dhash']);
 const showConfirm = ref(false);

@@ -1,6 +1,6 @@
 mod logic;
 
-pub use logic::{DuplicateGroup, DuplicateProgress};
+pub use logic::{DuplicateGroup};
 
 #[tauri::command]
 pub async fn scan_folder_stream_multi(

@@ -1,6 +1,6 @@
 mod logic;
 
-pub use logic::{BlackholeFolder, BlackholeProgress};
+pub use logic::{BlackholeFolder};
 
 #[tauri::command]
 pub async fn scan_blackhole_stream(

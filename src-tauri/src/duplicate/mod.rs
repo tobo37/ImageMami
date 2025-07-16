@@ -1,6 +1,8 @@
-mod logic;
+mod scan_folder_stream_multi;
+mod delete_files;
+mod cancel_scan;
 
-pub use logic::{DuplicateGroup};
+pub use scan_folder_stream_multi::DuplicateGroup;
 
 #[tauri::command]
 pub async fn scan_folder_stream_multi(
@@ -8,15 +10,15 @@ pub async fn scan_folder_stream_multi(
     path: String,
     tags: Vec<String>,
 ) -> Result<Vec<DuplicateGroup>, String> {
-    logic::scan_folder_stream_multi(window, path, tags).await
+    scan_folder_stream_multi::scan_folder_stream_multi(window, path, tags).await
 }
 
 #[tauri::command]
 pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
-    logic::delete_files(paths)
+    delete_files::delete_files(paths)
 }
 
 #[tauri::command]
 pub fn cancel_scan() {
-    logic::cancel_scan()
+    cancel_scan::cancel_scan()
 }

@@ -1,46 +1,8 @@
-use crate::file_formats::ALLOWED_EXTENSIONS;
 use chrono::prelude::*;
-use serde::Serialize;
 use std::{fs, path::PathBuf};
-use sysinfo::Disks;
 use walkdir::WalkDir;
 
-#[derive(Serialize)]
-pub struct ExternalDevice {
-    pub name: String,
-    pub path: String,
-    pub total: u64,
-}
-
-pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
-    let disks = Disks::new_with_refreshed_list();
-
-    let mut result = Vec::new();
-    for disk in disks.list() {
-        if disk.is_removable() {
-            let name = disk.name().to_string_lossy().into_owned();
-            let path = disk.mount_point().to_string_lossy().into_owned();
-            let total = disk.total_space();
-            result.push(ExternalDevice { name, path, total });
-        }
-    }
-
-    Ok(result)
-}
-
-pub fn list_all_disks() -> Result<Vec<ExternalDevice>, String> {
-    let disks = Disks::new_with_refreshed_list();
-
-    let mut result = Vec::new();
-    for disk in disks.list() {
-        let name = disk.name().to_string_lossy().into_owned();
-        let path = disk.mount_point().to_string_lossy().into_owned();
-        let total = disk.total_space();
-        result.push(ExternalDevice { name, path, total });
-    }
-
-    Ok(result)
-}
+use crate::file_formats::ALLOWED_EXTENSIONS;
 
 pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {

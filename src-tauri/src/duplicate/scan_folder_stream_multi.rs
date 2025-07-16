@@ -1,9 +1,8 @@
 use crate::file_formats::ALLOWED_EXTENSIONS;
-use blake3::Hasher; // <-- brings `emit` into scope
+use blake3::Hasher;
 use image::imageops::FilterType;
-use once_cell::sync::Lazy;
 use serde::Serialize;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::{
     collections::HashMap,
     fs::File,
@@ -13,6 +12,8 @@ use std::{
 };
 use tauri::Emitter;
 use walkdir::WalkDir;
+
+use super::cancel_scan::CANCEL_SCAN;
 
 fn dhash_hex(path: &Path) -> Result<String, String> {
     let img = image::open(path).map_err(|e| e.to_string())?;
@@ -31,8 +32,6 @@ fn dhash_hex(path: &Path) -> Result<String, String> {
     Ok(format!("{:016x}", bits))
 }
 
-static CANCEL_SCAN: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
-
 #[derive(Serialize)]
 pub struct DuplicateGroup {
     /// Tag describing the duplicate detection method. Currently always `"hash"`.
@@ -43,7 +42,7 @@ pub struct DuplicateGroup {
     pub paths: Vec<String>,
 }
 
-#[derive(Serialize, Clone)] // <-- now `Clone` as well
+#[derive(Serialize, Clone)]
 pub struct DuplicateProgress {
     pub progress: f32,
     pub eta_seconds: f32,
@@ -169,16 +168,4 @@ fn heavy_scan_multi_stream(
         );
     }
     Ok(result)
-}
-
-pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
-    for p in paths {
-        std::fs::remove_file(&p).map_err(|e| e.to_string())?;
-    }
-    Ok(())
-}
-
-
-pub fn cancel_scan() {
-    CANCEL_SCAN.store(true, Ordering::Relaxed);
 }

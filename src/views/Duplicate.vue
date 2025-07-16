@@ -72,7 +72,7 @@ interface DuplicateGroup {
   tag: string;
   hash: string;
   paths: string[];
-  ages: number[];
+  dates: string[];
 }
 
 interface DuplicateProgress {
@@ -183,14 +183,14 @@ async function confirmDelete() {
   duplicates.value = duplicates.value
     .map((g) => {
       const newPaths: string[] = [];
-      const newAges: number[] = [];
+      const newDates: string[] = [];
       g.paths.forEach((p, idx) => {
         if (!marked.value.includes(p)) {
           newPaths.push(p);
-          newAges.push(g.ages[idx]);
+          newDates.push(g.dates[idx]);
         }
       });
-      return { ...g, paths: newPaths, ages: newAges };
+      return { ...g, paths: newPaths, dates: newDates };
     })
     .filter((g) => g.paths.length > 0);
   marked.value = [];

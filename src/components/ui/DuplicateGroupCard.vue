@@ -9,7 +9,7 @@
         :class="{ marked: marked.includes(p) }"
       >
         <span class="path" v-html="highlight(p)"></span>
-        <span class="age">{{ formatAge(group.ages[i]) }}</span>
+        <span class="date">{{ formatDate(group.dates[i]) }}</span>
         <button @click="toggle(p)">
           {{ marked.includes(p) ? keepText : deleteText }}
         </button>
@@ -23,7 +23,7 @@ import { computed } from 'vue';
 import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
-  group: { tag: string; hash: string; paths: string[]; ages: number[] };
+  group: { tag: string; hash: string; paths: string[]; dates: string[] };
   marked: string[];
   deleteText: string;
   keepText: string;
@@ -58,14 +58,10 @@ function highlight(path: string) {
   return highlightedPaths.value[idx] ?? path;
 }
 
-function formatAge(sec: number) {
-  const days = sec / 86400;
-  if (days >= 1) return `${days.toFixed(1)}d`;
-  const hours = sec / 3600;
-  if (hours >= 1) return `${hours.toFixed(1)}h`;
-  const minutes = sec / 60;
-  if (minutes >= 1) return `${minutes.toFixed(1)}m`;
-  return `${sec}s`;
+function formatDate(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString();
 }
 </script>
 
@@ -94,7 +90,7 @@ function formatAge(sec: number) {
   word-break: break-word;
   font-size: 0.8rem;
 }
-.path-row .age {
+.path-row .date {
   font-size: 0.75rem;
   color: var(--text-muted);
   white-space: nowrap;

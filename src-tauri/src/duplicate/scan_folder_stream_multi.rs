@@ -11,6 +11,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 use tauri::{Window, Emitter};
 use walkdir::WalkDir;
+use chrono::prelude::*;
 
 use super::cancel_scan::CANCEL_SCAN;
 
@@ -22,8 +23,8 @@ pub struct DuplicateGroup {
     pub hash: String,
     /// Paths of the duplicate files.
     pub paths: Vec<String>,
-    /// Age of each file in seconds since last modification.
-    pub ages: Vec<u64>,
+    /// Last modification date of each file in ISO 8601 format.
+    pub dates: Vec<String>,
 }
 
 #[derive(Serialize, Clone)]
@@ -40,13 +41,17 @@ fn blake3_mmap(path: &Path) -> Result<String, String> {
     Ok(hash.to_hex().to_string())
 }
 
-/// Age of a file in seconds since last modification. Returns 0 on error.
-fn file_age_seconds(path: &str) -> u64 {
-    std::fs::metadata(path)
-        .and_then(|m| m.modified())
-        .and_then(|t| std::time::SystemTime::now().duration_since(t))
-        .map(|d| d.as_secs())
-        .unwrap_or(0)
+
+
+/// Modification date of a file in ISO 8601 format. Returns empty string on error.
+fn file_modified_iso(path: &str) -> String {
+    if let Ok(meta) = std::fs::metadata(path) {
+        if let Ok(time) = meta.modified() {
+            let dt: DateTime<Local> = time.into();
+            return dt.to_rfc3339();
+        }
+    }
+    String::new()
 }
 
 /// Scan `root` for duplicates, emitting progress to the Tauri `window`.
@@ -142,11 +147,11 @@ pub fn heavy_scan_multi_stream(
         for entry in map_hash.into_iter() {
             let (hash, paths) = entry;
             if paths.len() > 1 {
-                let ages = paths
+                let dates = paths
                     .iter()
-                    .map(|p| file_age_seconds(p))
+                    .map(|p| file_modified_iso(p))
                     .collect();
-                result.push(DuplicateGroup { tag: "hash".into(), hash, paths, ages });
+                result.push(DuplicateGroup { tag: "hash".into(), hash, paths, dates });
             }
         }
     }
@@ -154,11 +159,11 @@ pub fn heavy_scan_multi_stream(
         for entry in map_dhash.into_iter() {
             let (hash, paths) = entry;
             if paths.len() > 1 {
-                let ages = paths
+                let dates = paths
                     .iter()
-                    .map(|p| file_age_seconds(p))
+                    .map(|p| file_modified_iso(p))
                     .collect();
-                result.push(DuplicateGroup { tag: "dhash".into(), hash, paths, ages });
+                result.push(DuplicateGroup { tag: "dhash".into(), hash, paths, dates });
             }
         }
     }

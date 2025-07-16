@@ -3,11 +3,11 @@
     <div class="mode-picker">
       <label>
         <input type="checkbox" value="hash" v-model="modes" />
-        {{ t("duplicate.modes.exact") }}
+        {{ t('duplicate.modes.exact') }}
       </label>
       <label>
         <input type="checkbox" value="dhash" v-model="modes" />
-        {{ t("duplicate.modes.perceptual") }}
+        {{ t('duplicate.modes.perceptual') }}
       </label>
     </div>
     <div
@@ -15,15 +15,15 @@
       v-if="!duplicates.length && !busy"
       @click="openDialog"
     >
-      <p>{{ t("duplicate.dragDropInstruction") }}</p>
-      <small>{{ t("duplicate.orClickToSelect") }}</small>
+      <p>{{ t('duplicate.dragDropInstruction') }}</p>
+      <small>{{ t('duplicate.orClickToSelect') }}</small>
     </div>
 
     <HamsterLoader v-if="busy" />
     <div v-if="busy" class="status">
       {{ Math.round(progress * 100) }}% - ETA {{ eta.toFixed(1) }}s
       <button class="ghost cancel-button" @click="cancelScan">
-        {{ t("common.cancel") }}
+        {{ t('common.cancel') }}
       </button>
     </div>
 
@@ -46,7 +46,7 @@
 
     <div v-if="markedCount" class="delete-bar">
       <button class="delete-button" @click="deleteMarked">
-        {{ t("duplicate.deleteMarked") }}
+        {{ t('duplicate.deleteMarked') }}
       </button>
     </div>
 
@@ -63,14 +63,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import { open } from "@tauri-apps/plugin-dialog";
-import { useI18n } from "vue-i18n";
-import HamsterLoader from "../ui/HamsterLoader.vue";
-import ImageCard from "../ui/ImageCard.vue";
-import DeleteConfirmModal from "../ui/DeleteConfirmModal.vue";
+import { ref, computed, onBeforeUnmount } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { open } from '@tauri-apps/plugin-dialog';
+import { useI18n } from 'vue-i18n';
+import HamsterLoader from '../components/ui/HamsterLoader.vue';
+import ImageCard from '../components/ui/ImageCard.vue';
+import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
 
 interface DuplicateGroup {
   tag: string;
@@ -88,7 +88,7 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
-const modes = ref<string[]>(["hash", "dhash"]);
+const modes = ref<string[]>(['hash', 'dhash']);
 const showConfirm = ref(false);
 const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
@@ -103,11 +103,11 @@ function tagText(tag: string) {
 
 function recordDecision(tag: string, path: string, value: string) {
   let del: boolean | null;
-  if (value === "keep") del = false;
-  else if (value === "delete") del = true;
+  if (value === 'keep') del = false;
+  else if (value === 'delete') del = true;
   else del = null;
-  invoke("record_decision", { tag, path, delete: del });
-  if (value === "delete") {
+  invoke('record_decision', { tag, path, delete: del });
+  if (value === 'delete') {
     if (!marked.value.includes(path)) marked.value.push(path);
   } else {
     const idx = marked.value.indexOf(path);
@@ -125,12 +125,12 @@ async function scanFolder(path: string) {
     unlisten();
     unlisten = null;
   }
-  unlisten = await listen<DuplicateProgress>("duplicate_progress", (e) => {
+  unlisten = await listen<DuplicateProgress>('duplicate_progress', (e) => {
     progress.value = e.payload.progress;
     eta.value = e.payload.eta_seconds;
   });
   try {
-    const results = await invoke<DuplicateGroup[]>("scan_folder_stream_multi", {
+    const results = await invoke<DuplicateGroup[]>('scan_folder_stream_multi', {
       path,
       tags: modes.value,
     });
@@ -166,7 +166,7 @@ function deleteMarked() {
 }
 
 async function confirmDelete() {
-  await invoke("delete_files", { paths: marked.value });
+  await invoke('delete_files', { paths: marked.value });
   showConfirm.value = false;
   duplicates.value = duplicates.value
     .map((g) => ({
@@ -183,7 +183,7 @@ function cancelDelete() {
 
 function cancelScan() {
   cancelled.value = true;
-  invoke("cancel_scan");
+  invoke('cancel_scan');
   if (unlisten) {
     unlisten();
     unlisten = null;
@@ -193,7 +193,7 @@ function cancelScan() {
 
 onBeforeUnmount(() => {
   if (unlisten) unlisten();
-  invoke("cancel_scan");
+  invoke('cancel_scan');
 });
 </script>
 

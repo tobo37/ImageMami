@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
-import { useI18n } from "vue-i18n";
+import { ref } from 'vue';
+import { open } from '@tauri-apps/plugin-dialog';
+import { invoke } from '@tauri-apps/api/core';
+import { useI18n } from 'vue-i18n';
 
-import DestinationSelector from "../ui/DestinationSelector.vue";
-import Thumbnail from "../ui/Thumbnail.vue";
+import DestinationSelector from '../components/ui/DestinationSelector.vue';
+import Thumbnail from '../components/ui/Thumbnail.vue';
 
 const { t } = useI18n();
 const srcPath = ref<string | null>(null);
@@ -22,14 +22,14 @@ async function chooseSource() {
 
 async function loadImages() {
   if (!srcPath.value) return;
-  images.value = await invoke<string[]>("find_images", { path: srcPath.value });
+  images.value = await invoke<string[]>('find_images', { path: srcPath.value });
 }
 
 async function startSort() {
   if (!srcPath.value) return;
   busy.value = true;
   try {
-    await invoke("sort_images", { path: srcPath.value });
+    await invoke('sort_images', { path: srcPath.value });
     await loadImages();
   } finally {
     busy.value = false;
@@ -52,7 +52,7 @@ async function startSort() {
     <p v-else class="placeholder">-</p>
 
     <button class="btn" @click="startSort" :disabled="busy || !srcPath">
-      {{ busy ? "…" : t("sort.start") }}
+      {{ busy ? '…' : t('sort.start') }}
     </button>
   </div>
 </template>

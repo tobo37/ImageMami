@@ -3,11 +3,11 @@
     <div class="mode-picker">
       <label>
         <input type="checkbox" value="hash" v-model="modes" />
-        {{ t("duplicate.modes.exact") }}
+        {{ t('duplicate.modes.exact') }}
       </label>
       <label>
         <input type="checkbox" value="dhash" v-model="modes" />
-        {{ t("duplicate.modes.perceptual") }}
+        {{ t('duplicate.modes.perceptual') }}
       </label>
     </div>
     <div
@@ -15,15 +15,15 @@
       v-if="!duplicates.length && !busy"
       @click="openDialog"
     >
-      <p>{{ t("duplicate.dragDropInstruction") }}</p>
-      <small>{{ t("duplicate.orClickToSelect") }}</small>
+      <p>{{ t('duplicate.dragDropInstruction') }}</p>
+      <small>{{ t('duplicate.orClickToSelect') }}</small>
     </div>
 
     <HamsterLoader v-if="busy" />
     <div v-if="busy" class="status">
       {{ Math.round(progress * 100) }}% - ETA {{ eta.toFixed(1) }}s
       <button class="ghost cancel-button" @click="cancelScan">
-        {{ t("common.cancel") }}
+        {{ t('common.cancel') }}
       </button>
     </div>
 
@@ -46,7 +46,7 @@
 
     <div v-if="markedCount" class="delete-bar">
       <button class="delete-button" @click="deleteMarked">
-        {{ t("duplicate.deleteMarked") }}
+        {{ t('duplicate.deleteMarked') }}
       </button>
     </div>
 
@@ -63,20 +63,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from "vue";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { ref, computed, onBeforeUnmount } from 'vue';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   scanFolder as scanFolderCmd,
   deleteFiles,
   cancelScan as cancelScanCmd,
   recordDecision as saveDecision,
   type DuplicateGroup,
-} from "../../services/tauriApi";
-import { open } from "@tauri-apps/plugin-dialog";
-import { useI18n } from "vue-i18n";
-import HamsterLoader from "../ui/HamsterLoader.vue";
-import ImageCard from "../ui/ImageCard.vue";
-import DeleteConfirmModal from "../ui/DeleteConfirmModal.vue";
+} from '../../services/tauriApi';
+import { open } from '@tauri-apps/plugin-dialog';
+import { useI18n } from 'vue-i18n';
+import HamsterLoader from '../ui/HamsterLoader.vue';
+import ImageCard from '../ui/ImageCard.vue';
+import DeleteConfirmModal from '../ui/DeleteConfirmModal.vue';
 
 interface DuplicateProgress {
   progress: number;
@@ -88,7 +88,7 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
-const modes = ref<string[]>(["hash", "dhash"]);
+const modes = ref<string[]>(['hash', 'dhash']);
 const showConfirm = ref(false);
 const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
@@ -103,11 +103,11 @@ function tagText(tag: string) {
 
 function recordDecision(tag: string, path: string, value: string) {
   let del: boolean | null;
-  if (value === "keep") del = false;
-  else if (value === "delete") del = true;
+  if (value === 'keep') del = false;
+  else if (value === 'delete') del = true;
   else del = null;
   saveDecision(tag, path, del);
-  if (value === "delete") {
+  if (value === 'delete') {
     if (!marked.value.includes(path)) marked.value.push(path);
   } else {
     const idx = marked.value.indexOf(path);
@@ -125,7 +125,7 @@ async function scanFolder(path: string) {
     unlisten();
     unlisten = null;
   }
-  unlisten = await listen<DuplicateProgress>("duplicate_progress", (e) => {
+  unlisten = await listen<DuplicateProgress>('duplicate_progress', (e) => {
     progress.value = e.payload.progress;
     eta.value = e.payload.eta_seconds;
   });

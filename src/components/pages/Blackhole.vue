@@ -1,22 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
-import { open } from "@tauri-apps/plugin-dialog";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { ref, onMounted } from 'vue';
+import { useSettingsStore } from '../../stores/settings';
+import { useI18n } from 'vue-i18n';
+import { open } from '@tauri-apps/plugin-dialog';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   listAllDisks,
   scanBlackhole,
   importBlackhole,
   type ExternalDevice as Device,
   type BlackholeFolder,
-} from "../../services/tauriApi";
-import DestinationSelector from "../ui/DestinationSelector.vue";
+} from '../../services/tauriApi';
+import DestinationSelector from '../ui/DestinationSelector.vue';
 
 interface BlackholeProgress {
   progress: number;
 }
 
-const destPath = ref<string | null>(null);
+const settings = useSettingsStore();
 const devices = ref<Device[]>([]);
 const busyPath = ref<string | null>(null);
 const folders = ref<BlackholeFolder[]>([]);
@@ -25,7 +26,6 @@ let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
 
 onMounted(() => {
-  destPath.value = localStorage.getItem("importDest");
   loadDevices();
 });
 
@@ -33,8 +33,7 @@ async function chooseDest() {
   const selected = await open({ directory: true, multiple: false });
   if (!selected) return;
   const path = Array.isArray(selected) ? selected[0] : selected;
-  destPath.value = path;
-  localStorage.setItem("importDest", path);
+  settings.setImportDestination(path);
 }
 
 async function loadDevices() {
@@ -42,7 +41,7 @@ async function loadDevices() {
 }
 
 async function scanDisk(path: string) {
-  if (!destPath.value) return;
+  if (!settings.importDestination) return;
   busyPath.value = path;
   folders.value = [];
   progress.value = 0;
@@ -50,11 +49,11 @@ async function scanDisk(path: string) {
     unlisten();
     unlisten = null;
   }
-  unlisten = await listen<BlackholeProgress>("blackhole_progress", (e) => {
+  unlisten = await listen<BlackholeProgress>('blackhole_progress', (e) => {
     progress.value = e.payload.progress;
   });
   try {
-    folders.value = await scanBlackhole(path, destPath.value);
+    folders.value = await scanBlackhole(path, settings.importDestination);
   } finally {
     busyPath.value = null;
     if (unlisten) {
@@ -65,30 +64,30 @@ async function scanDisk(path: string) {
 }
 
 async function importFolder(folder: BlackholeFolder, cut: boolean) {
-  if (!destPath.value) return;
-  await importBlackhole(folder.files, destPath.value, cut);
+  if (!settings.importDestination) return;
+  await importBlackhole(folder.files, settings.importDestination, cut);
   folders.value = folders.value.filter((f) => f.path !== folder.path);
 }
 </script>
 
 <template>
   <div class="view blackhole-view">
-    <h1>{{ t("blackhole.title") }}</h1>
+    <h1>{{ t('blackhole.title') }}</h1>
     <DestinationSelector
-      :path="destPath"
+      :path="settings.importDestination"
       :label="t('import.destination')"
       :choose-text="t('import.choose')"
       @choose="chooseDest"
     />
 
     <section>
-      <h2>{{ t("blackhole.disks") }}</h2>
+      <h2>{{ t('blackhole.disks') }}</h2>
       <div v-if="devices.length" class="devices-grid">
         <div v-for="d in devices" :key="d.path" class="card device-card">
           <strong>{{ d.name }}</strong>
           <p class="device-path">{{ d.path }}</p>
           <button class="btn" :disabled="!!busyPath" @click="scanDisk(d.path)">
-            {{ t("blackhole.scan") }}
+            {{ t('blackhole.scan') }}
           </button>
         </div>
       </div>
@@ -100,13 +99,13 @@ async function importFolder(folder: BlackholeFolder, cut: boolean) {
     <section v-if="folders.length" class="folder-list">
       <div v-for="f in folders" :key="f.path" class="card folder-card">
         <p class="folder-path">{{ f.path }}</p>
-        <p>{{ f.files.length }} {{ t("blackhole.files") }}</p>
+        <p>{{ f.files.length }} {{ t('blackhole.files') }}</p>
         <div class="actions">
           <button class="btn" @click="importFolder(f, false)">
-            {{ t("blackhole.copy") }}
+            {{ t('blackhole.copy') }}
           </button>
           <button class="btn ghost" @click="importFolder(f, true)">
-            {{ t("blackhole.cut") }}
+            {{ t('blackhole.cut') }}
           </button>
         </div>
       </div>

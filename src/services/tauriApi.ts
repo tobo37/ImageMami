@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core';
 
 export interface ExternalDevice {
   name: string;
@@ -18,25 +18,25 @@ export interface BlackholeFolder {
 }
 
 export async function listExternalDevices(): Promise<ExternalDevice[]> {
-  return invoke<ExternalDevice[]>("list_external_devices");
+  return invoke<ExternalDevice[]>('list_external_devices');
 }
 
 export async function listAllDisks(): Promise<ExternalDevice[]> {
-  return invoke<ExternalDevice[]>("list_all_disks");
+  return invoke<ExternalDevice[]>('list_all_disks');
 }
 
 export async function importDevice(
   devicePath: string,
   destPath: string,
 ): Promise<void> {
-  return invoke("import_device", { devicePath, destPath });
+  return invoke('import_device', { devicePath, destPath });
 }
 
 export async function scanFolder(
   path: string,
   tags: string[],
 ): Promise<DuplicateGroup[]> {
-  return invoke<DuplicateGroup[]>("scan_folder_multi_stream", { path, tags });
+  return invoke<DuplicateGroup[]>('scan_folder_multi_stream', { path, tags });
 }
 
 export async function recordDecision(
@@ -44,37 +44,37 @@ export async function recordDecision(
   path: string,
   del: boolean | null,
 ): Promise<void> {
-  return invoke("record_decision", { tag, path, delete: del });
+  return invoke('record_decision', { tag, path, delete: del });
 }
 
 export async function deleteFiles(paths: string[]): Promise<void> {
-  return invoke("delete_files", { paths });
+  return invoke('delete_files', { paths });
 }
 
 export async function cancelScan(): Promise<void> {
-  return invoke("cancel_scan");
+  return invoke('cancel_scan');
 }
 
 export async function findImages(path: string): Promise<string[]> {
-  return invoke<string[]>("find_images", { path });
+  return invoke<string[]>('find_images', { path });
 }
 
 export async function sortImages(path: string): Promise<void> {
-  return invoke("sort_images", { path });
+  return invoke('sort_images', { path });
 }
 
 export async function generateThumbnail(
   path: string,
   maxSize?: number,
 ): Promise<string> {
-  return invoke<string>("generate_thumbnail", { path, maxSize });
+  return invoke<string>('generate_thumbnail', { path, maxSize });
 }
 
 export async function scanBlackhole(
   rootPath: string,
   destPath: string,
 ): Promise<BlackholeFolder[]> {
-  return invoke<BlackholeFolder[]>("scan_blackhole_stream", {
+  return invoke<BlackholeFolder[]>('scan_blackhole_stream', {
     rootPath,
     destPath,
   });
@@ -85,9 +85,9 @@ export async function importBlackhole(
   destPath: string,
   cut: boolean,
 ): Promise<void> {
-  return invoke("import_blackhole", { files, destPath, cut });
+  return invoke('import_blackhole', { files, destPath, cut });
 }
 
 export async function exportTraining(path: string): Promise<void> {
-  return invoke("export_training", { path });
+  return invoke('export_training', { path });
 }

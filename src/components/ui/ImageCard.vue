@@ -84,6 +84,12 @@ onMounted(async () => {
   color: white;
 }
 .image-card.marked {
-  outline: 2px solid red;
+  outline: 2px solid var(--md-sys-color-primary, var(--accent-color));
+  box-shadow: 0 2px 6px
+    color-mix(
+      in srgb,
+      var(--md-sys-color-primary, var(--accent-color)),
+      transparent 50%
+    );
 }
 </style>

@@ -42,9 +42,12 @@ fn blake3_mmap(path: &Path) -> Result<String, String> {
 
 /// Age of a file in seconds since last modification. Returns 0 on error.
 fn file_age_seconds(path: &str) -> u64 {
-    std::fs::metadata(path)
-        .and_then(|m| m.modified())
-        .and_then(|t| std::time::SystemTime::now().duration_since(t))
+    let modified = match std::fs::metadata(path).and_then(|m| m.modified()) {
+        Ok(t) => t,
+        Err(_) => return 0,
+    };
+    std::time::SystemTime::now()
+        .duration_since(modified)
         .map(|d| d.as_secs())
         .unwrap_or(0)
 }
@@ -106,17 +109,24 @@ pub fn heavy_scan_multi_stream(
                 if let Ok(img) = image::open(&path) {
                     let gray = img.to_luma8();
                     // resize returns new ImageBuffer
-                    let resized = image::imageops::resize(&gray, 9, 8, FilterType::Triangle);
-                    // copy into buf
-                    buf.extend_from_slice(&resized.into_raw());
+                    buf.extend_from_slice(
+                        &image::imageops::resize(&gray, 9, 8, FilterType::Triangle)
+                            .into_raw(),
+                    );
                     let mut bits = 0u64;
-                    for (i, window) in buf.windows(2).enumerate() {
-                        if window[0] > window[1] {
-                            bits |= 1 << i;
+                    for y in 0..8 {
+                        let row = y * 9;
+                        for x in 0..8 {
+                            if buf[row + x] > buf[row + x + 1] {
+                                bits |= 1 << (y * 8 + x);
+                            }
                         }
                     }
                     let dh = format!("{:016x}", bits);
-                    map_dhash.entry(dh).or_default().push(path.display().to_string());
+                    map_dhash
+                        .entry(dh)
+                        .or_default()
+                        .push(path.display().to_string());
                 }
             }
 

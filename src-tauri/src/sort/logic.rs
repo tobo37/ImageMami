@@ -24,7 +24,6 @@ fn scan_images(root: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-#[tauri::command]
 pub fn find_images(path: String) -> Result<Vec<String>, String> {
     let list = scan_images(Path::new(&path));
     Ok(list
@@ -33,7 +32,6 @@ pub fn find_images(path: String) -> Result<Vec<String>, String> {
         .collect())
 }
 
-#[tauri::command]
 pub fn sort_images(path: String) -> Result<(), String> {
     let root = PathBuf::from(&path);
     let files = scan_images(&root);
@@ -55,4 +53,3 @@ pub fn sort_images(path: String) -> Result<(), String> {
     }
     Ok(())
 }
-

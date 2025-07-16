@@ -12,7 +12,6 @@ pub struct ExternalDevice {
     pub total: u64,
 }
 
-#[tauri::command]
 pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
     let disks = Disks::new_with_refreshed_list();
 
@@ -29,7 +28,6 @@ pub fn list_external_devices() -> Result<Vec<ExternalDevice>, String> {
     Ok(result)
 }
 
-#[tauri::command]
 pub fn list_all_disks() -> Result<Vec<ExternalDevice>, String> {
     let disks = Disks::new_with_refreshed_list();
 
@@ -44,7 +42,6 @@ pub fn list_all_disks() -> Result<Vec<ExternalDevice>, String> {
     Ok(result)
 }
 
-#[tauri::command]
 pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
         do_import(PathBuf::from(device_path), PathBuf::from(dest_path))

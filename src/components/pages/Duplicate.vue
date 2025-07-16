@@ -130,7 +130,7 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    const results = await invoke<DuplicateGroup[]>("scan_folder_multi_stream", {
+    const results = await invoke<DuplicateGroup[]>("scan_folder_stream_multi", {
       path,
       tags: modes.value,
     });

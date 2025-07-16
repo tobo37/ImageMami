@@ -49,7 +49,6 @@ pub struct DuplicateProgress {
     pub eta_seconds: f32,
 }
 
-#[tauri::command]
 pub async fn scan_folder_stream_multi(
     window: tauri::Window,
     path: String,
@@ -172,7 +171,6 @@ fn heavy_scan_multi_stream(
     Ok(result)
 }
 
-#[tauri::command]
 pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
     for p in paths {
         std::fs::remove_file(&p).map_err(|e| e.to_string())?;
@@ -181,7 +179,6 @@ pub fn delete_files(paths: Vec<String>) -> Result<(), String> {
 }
 
 
-#[tauri::command]
 pub fn cancel_scan() {
     CANCEL_SCAN.store(true, Ordering::Relaxed);
 }

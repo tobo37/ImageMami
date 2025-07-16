@@ -17,7 +17,6 @@ pub struct BlackholeProgress {
     pub progress: f32,
 }
 
-#[tauri::command]
 pub async fn scan_blackhole_stream(
     window: tauri::Window,
     root_path: String,
@@ -79,7 +78,6 @@ fn do_scan_blackhole_stream(
         .collect())
 }
 
-#[tauri::command]
 pub async fn import_blackhole(
     files: Vec<String>,
     dest_path: String,

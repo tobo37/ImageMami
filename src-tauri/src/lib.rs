@@ -22,8 +22,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             greet,
-            duplicate::scan_folder_stream,
-            duplicate::scan_folder_dhash_stream,
+            duplicate::scan_folder_stream_multi,
             duplicate::delete_files,
             duplicate::cancel_scan,
             importer::list_external_devices,

@@ -42,10 +42,15 @@ const messages = {
       title: "Training Data",
       export: "Export file",
     },
+    sort: {
+      title: "Sort",
+      choose: "Choose folder",
+      source: "Source:",
+      start: "Sort images",
+    },
     home: {
       previewBanner: "preview - wait for release",
     },
-    sort: { title: "Sort" },
     blackhole: {
       title: "Blackhole",
       scan: "Scan",
@@ -93,10 +98,15 @@ const messages = {
       title: "Trainingsdaten",
       export: "Datei exportieren",
     },
+    sort: {
+      title: "Sortieren",
+      choose: "Ordner wählen",
+      source: "Quelle:",
+      start: "Bilder sortieren",
+    },
     home: {
       previewBanner: "Vorschau - warte auf Release",
     },
-    sort: { title: "Sortieren" },
     blackhole: {
       title: "Schwarzes Loch",
       scan: "Scannen",

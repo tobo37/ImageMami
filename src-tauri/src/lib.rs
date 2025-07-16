@@ -34,6 +34,8 @@ pub fn run() {
             training::record_decision,
             training::export_training,
             preview::generate_thumbnail,
+            sort::find_images,
+            sort::sort_images,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

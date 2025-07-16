@@ -1,8 +1,8 @@
 use chrono::prelude::*;
 use serde::Serialize;
 use std::{collections::HashMap, fs, path::PathBuf};
-use walkdir::WalkDir;
 use tauri::Emitter;
+use walkdir::WalkDir;
 
 use crate::file_formats::ALLOWED_EXTENSIONS;
 
@@ -12,7 +12,7 @@ pub struct BlackholeFolder {
     pub files: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct BlackholeProgress {
     pub progress: f32,
 }

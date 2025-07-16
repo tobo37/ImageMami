@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useSettingsStore } from "../../stores/settings";
 import { useI18n } from "vue-i18n";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
@@ -20,7 +21,7 @@ interface BlackholeProgress {
   progress: number;
 }
 
-const destPath = ref<string | null>(null);
+const settings = useSettingsStore();
 const devices = ref<Device[]>([]);
 const busyPath = ref<string | null>(null);
 const folders = ref<BlackholeFolder[]>([]);
@@ -29,7 +30,6 @@ let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
 
 onMounted(() => {
-  destPath.value = localStorage.getItem("importDest");
   loadDevices();
 });
 
@@ -37,8 +37,7 @@ async function chooseDest() {
   const selected = await open({ directory: true, multiple: false });
   if (!selected) return;
   const path = Array.isArray(selected) ? selected[0] : selected;
-  destPath.value = path;
-  localStorage.setItem("importDest", path);
+  settings.setImportDestination(path);
 }
 
 async function loadDevices() {
@@ -46,7 +45,7 @@ async function loadDevices() {
 }
 
 async function scanDisk(path: string) {
-  if (!destPath.value) return;
+  if (!settings.importDestination) return;
   busyPath.value = path;
   folders.value = [];
   progress.value = 0;
@@ -60,7 +59,7 @@ async function scanDisk(path: string) {
   try {
     folders.value = await invoke<BlackholeFolder[]>("scan_blackhole_stream", {
       rootPath: path,
-      destPath: destPath.value,
+      destPath: settings.importDestination,
     });
   } finally {
     busyPath.value = null;
@@ -72,10 +71,10 @@ async function scanDisk(path: string) {
 }
 
 async function importFolder(folder: BlackholeFolder, cut: boolean) {
-  if (!destPath.value) return;
+  if (!settings.importDestination) return;
   await invoke("import_blackhole", {
     files: folder.files,
-    destPath: destPath.value,
+    destPath: settings.importDestination,
     cut,
   });
   folders.value = folders.value.filter((f) => f.path !== folder.path);
@@ -86,7 +85,7 @@ async function importFolder(folder: BlackholeFolder, cut: boolean) {
   <div class="view blackhole-view">
     <h1>{{ t("blackhole.title") }}</h1>
     <DestinationSelector
-      :path="destPath"
+      :path="settings.importDestination"
       :label="t('import.destination')"
       :choose-text="t('import.choose')"
       @choose="chooseDest"

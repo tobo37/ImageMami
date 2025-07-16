@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 import { createI18n } from "vue-i18n";
@@ -18,4 +19,6 @@ const i18n = createI18n({
   messages,
 });
 
-createApp(App).use(router).use(i18n).mount("#app");
+const pinia = createPinia();
+
+createApp(App).use(router).use(i18n).use(pinia).mount("#app");

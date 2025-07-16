@@ -17,8 +17,8 @@ const headerTitle = computed(() => {
 });
 
 const languages = [
-  { code: "en", flag: "🇬🇧" },
-  { code: "de", flag: "🇩🇪" },
+  { code: "en", label: "EN" },
+  { code: "de", label: "DE" },
 ];
 
 onMounted(() => {
@@ -66,8 +66,13 @@ function goBack() {
     <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
     <button @click="toggleTheme">{{ theme === "dark" ? "☀️" : "🌙" }}</button>
     <select v-model="locale" class="lang-select" aria-label="Language">
-      <option v-for="lang in languages" :key="lang.code" :value="lang.code">
-        {{ lang.flag }}
+      <option
+        v-for="lang in languages"
+        :key="lang.code"
+        :value="lang.code"
+        :style="{ color: 'var(--text-color)' }"
+      >
+        {{ lang.label }}
       </option>
     </select>
   </header>
@@ -95,6 +100,7 @@ function goBack() {
   border: none;
   font-size: 1.1rem;
   cursor: pointer;
+  color: var(--text-color);
 }
 .lang-select:focus {
   outline: none;

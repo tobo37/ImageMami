@@ -98,6 +98,7 @@ fn heavy_scan_multi_stream(
         if CANCEL_SCAN.load(Ordering::Relaxed) {
             break;
         }
+        let mut hash_match = false;
         if use_hash {
             let mut reader = BufReader::new(File::open(&path).map_err(|e| e.to_string())?);
             let mut hasher = Hasher::new();
@@ -110,12 +111,11 @@ fn heavy_scan_multi_stream(
                 hasher.update(&buf[..n]);
             }
             let hash_hex = hasher.finalize().to_hex().to_string();
-            map_hash
-                .entry(hash_hex)
-                .or_default()
-                .push(path.display().to_string());
+            let entry = map_hash.entry(hash_hex).or_default();
+            hash_match = !entry.is_empty();
+            entry.push(path.display().to_string());
         }
-        if use_dhash {
+        if use_dhash && !hash_match {
             let hash_hex = dhash_hex(&path)?;
             map_dhash
                 .entry(hash_hex)

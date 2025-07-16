@@ -1,5 +1,11 @@
 <template>
   <div class="view" @drop.prevent="handleDrop" @dragover.prevent>
+    <DestinationSelector
+      :path="settings.duplicateDestination"
+      :label="t('import.destination')"
+      :choose-text="t('import.choose')"
+      @choose="chooseDest"
+    />
     <div class="mode-picker">
       <label>
         <input type="checkbox" value="hash" v-model="modes" />
@@ -67,6 +73,8 @@ import { useI18n } from 'vue-i18n';
 import HamsterLoader from '../components/ui/HamsterLoader.vue';
 import DuplicateGroupCard from '../components/ui/DuplicateGroupCard.vue';
 import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
+import DestinationSelector from '../components/ui/DestinationSelector.vue';
+import { useSettingsStore } from '../stores/settings';
 
 interface DuplicateGroup {
   tag: string;
@@ -100,6 +108,7 @@ const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
 let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
+const settings = useSettingsStore();
 
 function tagText(tag: string) {
   const key = `duplicate.tags.${tag}`;
@@ -170,6 +179,13 @@ async function openDialog() {
   if (selected) {
     scanFolder(selected as string);
   }
+}
+
+async function chooseDest() {
+  const selected = await open({ directory: true, multiple: false });
+  if (!selected) return;
+  const path = Array.isArray(selected) ? selected[0] : selected;
+  settings.setDuplicateDestination(path);
 }
 
 function deleteMarked() {

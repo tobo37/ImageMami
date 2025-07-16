@@ -6,6 +6,10 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.getItem('importDest'),
   );
 
+  const duplicateDestination = ref<string | null>(
+    localStorage.getItem('duplicateDest'),
+  );
+
   watch(importDestination, (val) => {
     if (val) {
       localStorage.setItem('importDest', val);
@@ -14,9 +18,26 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   });
 
+  watch(duplicateDestination, (val) => {
+    if (val) {
+      localStorage.setItem('duplicateDest', val);
+    } else {
+      localStorage.removeItem('duplicateDest');
+    }
+  });
+
   function setImportDestination(path: string | null) {
     importDestination.value = path;
   }
 
-  return { importDestination, setImportDestination };
+  function setDuplicateDestination(path: string | null) {
+    duplicateDestination.value = path;
+  }
+
+  return {
+    importDestination,
+    setImportDestination,
+    duplicateDestination,
+    setDuplicateDestination,
+  };
 });

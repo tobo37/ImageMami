@@ -46,6 +46,12 @@
       </div>
     </div>
 
+    <div v-if="duplicates.length" class="auto-mark-bar">
+      <button class="ghost auto-mark-button" @click="autoMark">
+        {{ t('duplicate.autoMark') }}
+      </button>
+    </div>
+
     <div v-if="markedCount" class="delete-bar">
       <button class="delete-button" @click="deleteMarked">
         {{ t('duplicate.deleteMarked') }}
@@ -124,6 +130,22 @@ function updateMarked(path: string, value: string) {
     const idx = marked.value.indexOf(path);
     if (idx !== -1) marked.value.splice(idx, 1);
   }
+}
+
+function autoMark() {
+  duplicates.value.forEach((g) => {
+    if (g.paths.length <= 1) return;
+    const maxAge = Math.max(...g.ages);
+    const keepIdx = g.ages.indexOf(maxAge);
+    g.paths.forEach((p, idx) => {
+      if (idx === keepIdx) {
+        const i = marked.value.indexOf(p);
+        if (i !== -1) marked.value.splice(i, 1);
+      } else if (!marked.value.includes(p)) {
+        marked.value.push(p);
+      }
+    });
+  });
 }
 
 async function scanFolder(path: string) {
@@ -267,6 +289,16 @@ onBeforeUnmount(() => {
 .duplicate-group h3 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.auto-mark-bar {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.auto-mark-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
 }
 
 .delete-bar {

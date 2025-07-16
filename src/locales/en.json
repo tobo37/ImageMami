@@ -4,6 +4,7 @@
     "choose": "Choose folder & scan",
     "scanning": "Scanning…",
     "deleteMarked": "Delete marked",
+    "autoMark": "Auto mark",
     "confirmDelete": "Are you sure you want to delete {count} files?",
     "dragDropInstruction": "Drag and drop",
     "orClickToSelect": "or click",

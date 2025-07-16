@@ -4,6 +4,7 @@
     "choose": "Ordner auswählen & scannen",
     "scanning": "Scanne…",
     "deleteMarked": "Markierte löschen",
+    "autoMark": "Automatisch markieren",
     "confirmDelete": "Möchtest du wirklich {count} Dateien löschen?",
     "dragDropInstruction": "Ziehe einen Ordner hierher",
     "orClickToSelect": "oder klicke hier, um einen Ordner auszuwählen",

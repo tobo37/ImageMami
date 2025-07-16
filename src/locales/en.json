@@ -14,7 +14,9 @@
     "tags": {
       "hash": "Exact match",
       "dhash": "Perceptual match"
-    }
+    },
+    "exactTooltip": "Only find files that are completely identical.",
+    "perceptualTooltip": "Also detect images that look the same even if the files are different."
   },
   "common": {
     "keep": "keep",

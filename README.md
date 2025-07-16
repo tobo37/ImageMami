@@ -17,14 +17,6 @@ Since TypeScript cannot handle type information for `.vue` imports, they are shi
 
 You can learn more about Take Over mode [here](https://github.com/johnsoncodehk/volar/discussions/471).
 
-## Duplicate training
-
-When reviewing duplicate files in the **Duplicate** view you can now mark each
-file as _Keep_, _Delete_ or _Unknown_. These decisions are stored in
-`training.json` inside the application's data directory. The stored information
-can later be used to train an AI model on how you handle duplicates.
-You can export the collected training data from the **Training Data** section in the main menu.
-
 ## Duplicate detection modes
 
 The duplicate scanner can now run in either **Exact** mode using content hashes or in a **Perceptual** mode using dHash. Choose the desired mode in the Duplicate view before starting a scan.

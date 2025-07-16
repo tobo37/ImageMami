@@ -4,7 +4,6 @@ mod file_formats;
 mod importer;
 mod preview;
 mod sort;
-mod training;
 
 pub use duplicate::DuplicateGroup;
 pub use file_formats::ALLOWED_EXTENSIONS;
@@ -30,8 +29,6 @@ pub fn run() {
             importer::import_device,
             blackhole::scan_blackhole_stream,
             blackhole::import_blackhole,
-            training::record_decision,
-            training::export_training,
             preview::generate_thumbnail,
             sort::find_images,
             sort::sort_images,

@@ -31,10 +31,6 @@
     "refresh": "Refresh",
     "copy": "Copy images"
   },
-  "training": {
-    "title": "Training Data",
-    "export": "Export file"
-  },
   "sort": {
     "title": "Sort",
     "choose": "Choose folder",

@@ -26,16 +26,17 @@ The duplicate scanner can now run in either **Exact** mode using content hashes 
 Early testers can try unstable builds from GitHub pre-releases. See [docs/PRE_RELEASE.md](docs/PRE_RELEASE.md) for instructions on creating and downloading pre-releases.
 
 ## install for Ubuntu
+
 sudo apt update
 sudo apt install -y libwebkit2gtk-4.1-dev \
-  build-essential \
-  curl \
-  wget \
-  file \
-  libxdo-dev \
-  libssl-dev \
-  libayatana-appindicator3-dev \
-  librsvg2-dev
+ build-essential \
+ curl \
+ wget \
+ file \
+ libxdo-dev \
+ libssl-dev \
+ libayatana-appindicator3-dev \
+ librsvg2-dev
 curl -fsSL https://bun.sh/install | bash
 bun install
 bun run tauri build

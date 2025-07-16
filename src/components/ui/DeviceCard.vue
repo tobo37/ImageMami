@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import DotsLoader from "./DotsLoader.vue";
+import { computed } from 'vue';
+import DotsLoader from './DotsLoader.vue';
 
 interface Device {
   name: string;
@@ -19,11 +19,11 @@ const props = defineProps<{
 const emit = defineEmits<{ import: [path: string] }>();
 const icon = computed(() => {
   const n = props.device.name.toLowerCase();
-  if (n.includes("sd") || n.includes("usb")) return "💾";
-  return "🗄️";
+  if (n.includes('sd') || n.includes('usb')) return '💾';
+  return '🗄️';
 });
 function onCopy() {
-  emit("import", props.device.path);
+  emit('import', props.device.path);
 }
 </script>
 

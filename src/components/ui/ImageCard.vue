@@ -1,6 +1,6 @@
 <template>
   <div class="image-card" :class="{ marked }">
-    <img :src="src" alt="duplicate" />
+    <img :src="src" alt="duplicate" @error="handleError" />
     <p class="path">{{ path }}</p>
     <div class="actions">
       <button v-if="marked" @click="$emit('decision', 'keep')" class="keep">
@@ -27,7 +27,7 @@ const props = defineProps<{
 
 const src = ref<string>('');
 
-onMounted(async () => {
+async function loadImage() {
   const ext = props.path.split('.').pop()?.toLowerCase();
   const rawExts = ['raw', 'arw', 'dng', 'cr2', 'nef', 'pef', 'rw2', 'sr2'];
   if (ext && rawExts.includes(ext)) {
@@ -37,7 +37,13 @@ onMounted(async () => {
   } else {
     src.value = convertFileSrc(props.path);
   }
-});
+}
+
+async function handleError() {
+  src.value = await invoke<string>('generate_thumbnail', { path: props.path });
+}
+
+onMounted(loadImage);
 </script>
 
 <style scoped>

@@ -5,7 +5,7 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 const props = defineProps<{ path: string }>();
 const src = ref('');
 
-onMounted(async () => {
+async function loadImage() {
   const ext = props.path.split('.').pop()?.toLowerCase();
   const rawExts = ['raw', 'arw', 'dng', 'cr2', 'nef', 'pef', 'rw2', 'sr2'];
   if (ext && rawExts.includes(ext)) {
@@ -15,11 +15,17 @@ onMounted(async () => {
   } else {
     src.value = convertFileSrc(props.path);
   }
-});
+}
+
+async function handleError() {
+  src.value = await invoke<string>('generate_thumbnail', { path: props.path });
+}
+
+onMounted(loadImage);
 </script>
 
 <template>
-  <div class="thumb"><img :src="src" /></div>
+  <div class="thumb"><img :src="src" @error="handleError" /></div>
 </template>
 
 <style scoped>

@@ -35,7 +35,10 @@
 
     <div v-if="duplicates.length" class="duplicate-list">
       <div v-for="d in duplicates" :key="d.hash" class="duplicate-group">
-        <h3>{{ tagText(d.tag) }}</h3>
+        <h3>
+          {{ tagText(d.tag) }}
+          <small>{{ formatSize(d.size) }}</small>
+        </h3>
         <DuplicateGroupCard
           :group="d"
           :marked="marked"
@@ -79,6 +82,7 @@ import { useSettingsStore } from '../stores/settings';
 interface DuplicateGroup {
   tag: string;
   hash: string;
+  size: number;
   paths: string[];
   ages: number[];
 }
@@ -115,6 +119,17 @@ function tagText(tag: string) {
   const key = `duplicate.tags.${tag}`;
   const result = t(key);
   return result === key ? tag : result;
+}
+
+function formatSize(bytes: number) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let size = bytes,
+    i = 0;
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024;
+    i++;
+  }
+  return `${size.toFixed(1)} ${units[i]}`;
 }
 
 function updateMarked(path: string, value: string) {

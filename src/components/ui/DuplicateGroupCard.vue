@@ -3,12 +3,13 @@
     <Thumbnail :path="group.paths[0]" class="preview" />
     <div class="path-list">
       <div
-        v-for="p in group.paths"
+        v-for="(p, i) in group.paths"
         :key="p"
         class="path-row"
         :class="{ marked: marked.includes(p) }"
       >
         <span class="path" v-html="highlight(p)"></span>
+        <span class="age">{{ formatAge(group.ages[i]) }}</span>
         <button @click="toggle(p)">
           {{ marked.includes(p) ? keepText : deleteText }}
         </button>
@@ -22,7 +23,7 @@ import { computed } from 'vue';
 import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
-  group: { tag: string; hash: string; paths: string[] };
+  group: { tag: string; hash: string; paths: string[]; ages: number[] };
   marked: string[];
   deleteText: string;
   keepText: string;
@@ -56,6 +57,16 @@ function highlight(path: string) {
   const idx = props.group.paths.indexOf(path);
   return highlightedPaths.value[idx] ?? path;
 }
+
+function formatAge(sec: number) {
+  const days = sec / 86400;
+  if (days >= 1) return `${days.toFixed(1)}d`;
+  const hours = sec / 3600;
+  if (hours >= 1) return `${hours.toFixed(1)}h`;
+  const minutes = sec / 60;
+  if (minutes >= 1) return `${minutes.toFixed(1)}m`;
+  return `${sec}s`;
+}
 </script>
 
 <style scoped>
@@ -82,6 +93,11 @@ function highlight(path: string) {
   flex: 1;
   word-break: break-word;
   font-size: 0.8rem;
+}
+.path-row .age {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 .path-row button {
   font-size: 0.75rem;

@@ -146,12 +146,22 @@ async function scanFolder(path: string) {
   }
 }
 
+interface DropFile extends File {
+  /**
+   * Tauri injects a `path` property into the dropped file object which
+   * contains the filesystem path on all platforms. This is not part of the
+   * standard `File` interface, so we mark it as optional.
+   */
+  path?: string;
+}
+
 function handleDrop(event: DragEvent) {
   const files = event.dataTransfer?.files;
-  if (files && files.length) {
-    const path = files[0].webkitRelativePath;
-    scanFolder(path);
-  }
+  if (!files || !files.length) return;
+
+  const file = files[0] as DropFile;
+  const path = file.path ?? file.webkitRelativePath;
+  if (path) scanFolder(path);
 }
 
 async function openDialog() {

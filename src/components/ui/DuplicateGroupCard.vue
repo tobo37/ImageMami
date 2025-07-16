@@ -8,7 +8,7 @@
         class="path-row"
         :class="{ marked: marked.includes(p) }"
       >
-        <span class="path">{{ p }}</span>
+        <span class="path" v-html="highlight(p)"></span>
         <button @click="toggle(p)">
           {{ marked.includes(p) ? keepText : deleteText }}
         </button>
@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
@@ -32,6 +33,28 @@ const emit = defineEmits<{ decision: [path: string, value: string] }>();
 function toggle(path: string) {
   if (props.marked.includes(path)) emit('decision', path, 'keep');
   else emit('decision', path, 'delete');
+}
+
+const highlightedPaths = computed(() => {
+  const normalized = props.group.paths.map((p) =>
+    p.replace(/\\/g, '/').split('/'),
+  );
+  const maxParts = Math.max(...normalized.map((arr) => arr.length));
+  const diffIndices: number[] = [];
+  for (let i = 0; i < maxParts; i++) {
+    const parts = new Set(normalized.map((arr) => arr[i] ?? ''));
+    if (parts.size > 1) diffIndices.push(i);
+  }
+  return normalized.map((arr) =>
+    arr
+      .map((seg, idx) => (diffIndices.includes(idx) ? `<b>${seg}</b>` : seg))
+      .join('/'),
+  );
+});
+
+function highlight(path: string) {
+  const idx = props.group.paths.indexOf(path);
+  return highlightedPaths.value[idx] ?? path;
 }
 </script>
 

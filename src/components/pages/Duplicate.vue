@@ -1,9 +1,15 @@
 <template>
   <div class="view" @drop.prevent="handleDrop" @dragover.prevent>
-    <select v-model="mode" class="mode-picker">
-      <option value="hash">{{ t("duplicate.modes.exact") }}</option>
-      <option value="dhash">{{ t("duplicate.modes.perceptual") }}</option>
-    </select>
+    <div class="mode-picker">
+      <label>
+        <input type="checkbox" value="hash" v-model="modes" />
+        {{ t("duplicate.modes.exact") }}
+      </label>
+      <label>
+        <input type="checkbox" value="dhash" v-model="modes" />
+        {{ t("duplicate.modes.perceptual") }}
+      </label>
+    </div>
     <div
       class="dropzone"
       v-if="!duplicates.length && !busy"
@@ -82,7 +88,7 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
-const mode = ref("hash");
+const modes = ref<string[]>(["hash", "dhash"]);
 const showConfirm = ref(false);
 const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
@@ -124,11 +130,21 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    const result = await invoke<DuplicateGroup[]>("scan_folder_stream", {
-      path,
-    });
+    const results: DuplicateGroup[] = [];
+    if (modes.value.includes("hash")) {
+      const res = await invoke<DuplicateGroup[]>("scan_folder_stream", {
+        path,
+      });
+      if (!cancelled.value) results.push(...res);
+    }
+    if (modes.value.includes("dhash") && !cancelled.value) {
+      const res = await invoke<DuplicateGroup[]>("scan_folder_dhash_stream", {
+        path,
+      });
+      if (!cancelled.value) results.push(...res);
+    }
     if (!cancelled.value) {
-      duplicates.value = result;
+      duplicates.value = results;
     }
   } finally {
     busy.value = false;
@@ -255,7 +271,10 @@ onBeforeUnmount(() => {
 
 .mode-picker {
   margin-bottom: 1rem;
-  }
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
 button.ghost {
   background: transparent;
   color: var(--accent-color);

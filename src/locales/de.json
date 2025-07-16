@@ -1,0 +1,56 @@
+{
+  "duplicate": {
+    "title": "Duplikate",
+    "choose": "Ordner auswählen & scannen",
+    "scanning": "Scanne…",
+    "deleteMarked": "Markierte löschen",
+    "confirmDelete": "Möchtest du wirklich {count} Dateien löschen?",
+    "dragDropInstruction": "Ziehe einen Ordner hierher",
+    "orClickToSelect": "oder klicke hier, um einen Ordner auszuwählen",
+    "modes": {
+      "exact": "Exakt",
+      "perceptual": "Perzeptuell"
+    },
+    "tags": {
+      "hash": "Absolut identisch",
+      "dhash": "Ähnlich"
+    }
+  },
+  "common": {
+    "keep": "Behalten",
+    "delete": "Löschen",
+    "yes": "Ja",
+    "no": "Nein",
+    "cancel": "Abbrechen"
+  },
+  "import": {
+    "title": "Importieren",
+    "choose": "Ziel wählen",
+    "destination": "Ziel:",
+    "devices": "Externe Geräte",
+    "refresh": "Aktualisieren",
+    "copy": "Bilder kopieren"
+  },
+  "training": {
+    "title": "Trainingsdaten",
+    "export": "Datei exportieren"
+  },
+  "sort": {
+    "title": "Sortieren",
+    "choose": "Ordner wählen",
+    "source": "Quelle:",
+    "start": "Bilder sortieren"
+  },
+  "home": {
+    "previewBanner": "Vorschau - warte auf Release"
+  },
+  "blackhole": {
+    "title": "Schwarzes Loch",
+    "scan": "Scannen",
+    "disks": "Laufwerke",
+    "folders": "Ordner",
+    "copy": "Kopieren",
+    "cut": "Ausschneiden",
+    "files": "Dateien"
+  }
+}

@@ -14,8 +14,13 @@ const messages = {
       confirmDelete: "Are you sure you want to delete {count} files?",
       dragDropInstruction: "Drag and drop",
       orClickToSelect: "or click",
+      modes: {
+        exact: "Exact",
+        perceptual: "Perceptual",
+      },
       tags: {
         hash: "Exact match",
+        dhash: "Perceptual match",
       },
     },
     common: {
@@ -23,6 +28,7 @@ const messages = {
       delete: "delete",
       yes: "Yes",
       no: "No",
+      cancel: "Cancel",
     },
     import: {
       title: "Import",
@@ -42,7 +48,18 @@ const messages = {
       source: "Source:",
       start: "Sort images",
     },
-    blackhole: { title: "Blackhole" },
+    home: {
+      previewBanner: "preview - wait for release",
+    },
+    blackhole: {
+      title: "Blackhole",
+      scan: "Scan",
+      disks: "Drives",
+      folders: "Folders",
+      copy: "Copy",
+      cut: "Cut",
+      files: "files",
+    },
   },
   de: {
     duplicate: {
@@ -53,8 +70,13 @@ const messages = {
       confirmDelete: "Möchtest du wirklich {count} Dateien löschen?",
       dragDropInstruction: "Ziehe einen Ordner hierher",
       orClickToSelect: "oder klicke hier, um einen Ordner auszuwählen",
+      modes: {
+        exact: "Exakt",
+        perceptual: "Perzeptuell",
+      },
       tags: {
         hash: "Absolut identisch",
+        dhash: "Ähnlich",
       },
     },
     common: {
@@ -62,6 +84,7 @@ const messages = {
       delete: "Löschen",
       yes: "Ja",
       no: "Nein",
+      cancel: "Abbrechen",
     },
     import: {
       title: "Importieren",
@@ -81,7 +104,18 @@ const messages = {
       source: "Quelle:",
       start: "Bilder sortieren",
     },
-    blackhole: { title: "Schwarzes Loch" },
+    home: {
+      previewBanner: "Vorschau - warte auf Release",
+    },
+    blackhole: {
+      title: "Schwarzes Loch",
+      scan: "Scannen",
+      disks: "Laufwerke",
+      folders: "Ordner",
+      copy: "Kopieren",
+      cut: "Ausschneiden",
+      files: "Dateien",
+    },
   },
 };
 

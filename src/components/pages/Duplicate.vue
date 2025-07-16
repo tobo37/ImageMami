@@ -1,5 +1,9 @@
 <template>
   <div class="view" @drop.prevent="handleDrop" @dragover.prevent>
+    <select v-model="mode" class="mode-picker">
+      <option value="hash">{{ t("duplicate.modes.exact") }}</option>
+      <option value="dhash">{{ t("duplicate.modes.perceptual") }}</option>
+    </select>
     <div
       class="dropzone"
       v-if="!duplicates.length && !busy"
@@ -12,6 +16,9 @@
     <HamsterLoader v-if="busy" />
     <div v-if="busy" class="status">
       {{ Math.round(progress * 100) }}% - ETA {{ eta.toFixed(1) }}s
+      <button class="ghost cancel-button" @click="cancelScan">
+        {{ t("common.cancel") }}
+      </button>
     </div>
 
     <div v-if="duplicates.length" class="duplicate-list">
@@ -25,7 +32,7 @@
             :marked="marked.includes(p)"
             :keep-text="t('common.keep')"
             :delete-text="t('common.delete')"
-            @decision="(v) => recordDecision(d.tag, p, v)"
+            @decision="(v: string) => recordDecision(d.tag, p, v)"
           />
         </div>
       </div>
@@ -75,7 +82,9 @@ const busy = ref(false);
 const progress = ref(0);
 const eta = ref(0);
 const marked = ref<string[]>([]);
+const mode = ref("hash");
 const showConfirm = ref(false);
+const cancelled = ref(false);
 const markedCount = computed(() => marked.value.length);
 let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
@@ -105,6 +114,7 @@ async function scanFolder(path: string) {
   progress.value = 0;
   eta.value = 0;
   marked.value = [];
+  cancelled.value = false;
   if (unlisten) {
     unlisten();
     unlisten = null;
@@ -114,9 +124,12 @@ async function scanFolder(path: string) {
     eta.value = e.payload.eta_seconds;
   });
   try {
-    duplicates.value = await invoke<DuplicateGroup[]>("scan_folder_stream", {
+    const result = await invoke<DuplicateGroup[]>("scan_folder_stream", {
       path,
     });
+    if (!cancelled.value) {
+      duplicates.value = result;
+    }
   } finally {
     busy.value = false;
     if (unlisten) {
@@ -161,8 +174,19 @@ function cancelDelete() {
   showConfirm.value = false;
 }
 
+function cancelScan() {
+  cancelled.value = true;
+  invoke("cancel_scan");
+  if (unlisten) {
+    unlisten();
+    unlisten = null;
+  }
+  busy.value = false;
+}
+
 onBeforeUnmount(() => {
   if (unlisten) unlisten();
+  invoke("cancel_scan");
 });
 </script>
 
@@ -227,5 +251,18 @@ onBeforeUnmount(() => {
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: bold;
+}
+
+.mode-picker {
+  margin-bottom: 1rem;
+  }
+button.ghost {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+
+.cancel-button {
+  margin-left: 0.5rem;
 }
 </style>

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Tag for pre-release"
+        description: 'Tag for pre-release'
         required: true
       release_name:
-        description: "Release title"
+        description: 'Release title'
         required: true
       body:
-        description: "Release notes"
+        description: 'Release notes'
         required: false
 
 permissions:

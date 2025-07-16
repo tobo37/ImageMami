@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
 const props = defineProps<{
   path: string | null;
@@ -9,7 +9,7 @@ const props = defineProps<{
 const emit = defineEmits<{ choose: [] }>();
 
 const displayPath = computed(() => {
-  if (!props.path) return "-";
+  if (!props.path) return '-';
   const limit = 50;
   if (props.path.length <= limit) return props.path;
   const start = props.path.slice(0, 25);
@@ -17,7 +17,7 @@ const displayPath = computed(() => {
   return `${start}...${end}`;
 });
 function onChoose() {
-  emit("choose");
+  emit('choose');
 }
 </script>
 

@@ -165,6 +165,7 @@ function autoMark() {
 
 async function scanFolder(path: string) {
   busy.value = true;
+  duplicates.value = [];
   progress.value = 0;
   eta.value = 0;
   marked.value = [];

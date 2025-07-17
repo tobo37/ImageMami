@@ -5,6 +5,7 @@ use image::{imageops::FilterType};
 use memmap2::MmapOptions;
 use rayon::prelude::*;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -55,120 +56,134 @@ fn file_age_seconds(path: &str) -> u64 {
         .unwrap_or(0)
 }
 
+fn should_scan_file(path: &Path) -> bool {
+    path
+        .extension()
+        .and_then(|s| s.to_str())
+        .map(|ext| ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)))
+        .unwrap_or(false)
+}
+
+fn gather_candidate_paths(root: &Path) -> Vec<PathBuf> {
+    let mut by_size: HashMap<u64, Vec<PathBuf>> = HashMap::new();
+    for entry in WalkDir::new(root).into_iter().filter_map(Result::ok) {
+        if !entry.file_type().is_file() {
+            continue;
+        }
+        let path = entry.path().to_path_buf();
+        if should_scan_file(&path) {
+            if let Ok(meta) = path.metadata() {
+                by_size.entry(meta.len()).or_default().push(path);
+            }
+        }
+    }
+
+    by_size
+        .into_iter()
+        .filter(|(_, v)| v.len() > 1)
+        .flat_map(|(_, v)| v)
+        .collect()
+}
+
+fn compute_dhash(path: &Path, buf: &mut Vec<u8>) -> Result<String, String> {
+    let img = image::open(path).map_err(|e| e.to_string())?;
+    let gray = img.to_luma8();
+    let resized = image::imageops::resize(&gray, 9, 8, FilterType::Triangle);
+    buf.extend_from_slice(&resized.into_raw());
+    let mut bits = 0u64;
+    for (i, window) in buf.windows(2).enumerate() {
+        if window[0] > window[1] {
+            bits |= 1 << i;
+        }
+    }
+    Ok(format!("{:016x}", bits))
+}
+
+fn emit_progress(window: &Window, start: Instant, idx: usize, total: usize) {
+    let progress = idx as f32 / total as f32;
+    let elapsed = start.elapsed().as_secs_f32();
+    let eta = if progress > 0.0 {
+        elapsed / progress * (1.0 - progress)
+    } else {
+        0.0
+    };
+    let _ = window.emit(
+        "duplicate_progress",
+        DuplicateProgress {
+            progress,
+            eta_seconds: eta,
+        },
+    );
+}
+
+fn build_groups(map: DashMap<String, Vec<String>>, tag: &str) -> Vec<DuplicateGroup> {
+    map.into_iter()
+        .filter_map(|(hash, paths)| {
+            if paths.len() > 1 {
+                let ages = paths.iter().map(|p| file_age_seconds(p)).collect();
+                let size = std::fs::metadata(&paths[0]).map(|m| m.len()).unwrap_or(0);
+                Some(DuplicateGroup {
+                    tag: tag.into(),
+                    hash,
+                    size,
+                    paths,
+                    ages,
+                })
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 /// Scan `root` for duplicates, emitting progress to the Tauri `window`.
 pub fn heavy_scan_multi_stream(
     window: Window,
     root: PathBuf,
     tags: Vec<String>,
 ) -> Result<Vec<DuplicateGroup>, String> {
-    // Determine which methods to run
     let use_hash = tags.iter().any(|t| t == "hash");
     let use_dhash = tags.iter().any(|t| t == "dhash");
 
-    // 1) Group files by size
-    let by_size: DashMap<u64, Vec<PathBuf>> = DashMap::new();
-    for entry in WalkDir::new(&root).into_iter().filter_map(Result::ok) {
-        if !entry.file_type().is_file() { continue; }
-        let path = entry.path().to_path_buf();
-        if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
-            if ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)) {
-                if let Ok(meta) = path.metadata() {
-                    by_size.entry(meta.len()).or_default().push(path);
-                }
-            }
-        }
-    }
-
-    // Flatten only buckets with >1 file
-    let paths: Vec<PathBuf> = by_size.into_iter()
-        .filter_map(|(_, v)| if v.len() > 1 { Some(v) } else { None })
-        .flatten()
-        .collect();
-
+    let paths = gather_candidate_paths(&root);
     let total = paths.len();
     let start = Instant::now();
     let window_clone = window.clone();
 
-    // Thread-safe maps for results
     let map_hash = DashMap::<String, Vec<String>>::new();
     let map_dhash = DashMap::<String, Vec<String>>::new();
     let counter = AtomicUsize::new(0);
 
-    // 2) Parallel processing
-    paths.into_par_iter()
-        .for_each_with(Vec::new(), |buf, path| {
-            if CANCEL_SCAN.load(Ordering::Relaxed) { return; }
-            let idx = counter.fetch_add(1, Ordering::SeqCst);
+    paths.into_par_iter().for_each_with(Vec::new(), |buf, path| {
+        if CANCEL_SCAN.load(Ordering::Relaxed) {
+            return;
+        }
+        let idx = counter.fetch_add(1, Ordering::SeqCst);
 
-            // Byte-wise BLAKE3 hash
-            if use_hash {
-                if let Ok(h) = blake3_mmap(&path) {
-                    map_hash.entry(h).or_default().push(path.display().to_string());
-                }
+        if use_hash {
+            if let Ok(h) = blake3_mmap(&path) {
+                map_hash.entry(h).or_default().push(path.display().to_string());
             }
-            // Perceptual dHash only if not using byte-hash
-            else if use_dhash {
-                buf.clear();
-                if let Ok(img) = image::open(&path) {
-                    let gray = img.to_luma8();
-                    // resize returns new ImageBuffer
-                    let resized = image::imageops::resize(&gray, 9, 8, FilterType::Triangle);
-                    // copy into buf
-                    buf.extend_from_slice(&resized.into_raw());
-                    let mut bits = 0u64;
-                    for (i, window) in buf.windows(2).enumerate() {
-                        if window[0] > window[1] {
-                            bits |= 1 << i;
-                        }
-                    }
-                    let dh = format!("{:016x}", bits);
-                    map_dhash.entry(dh).or_default().push(path.display().to_string());
-                }
+        } else if use_dhash {
+            buf.clear();
+            if let Ok(dh) = compute_dhash(&path, buf) {
+                map_dhash.entry(dh).or_default().push(path.display().to_string());
             }
+        }
 
-            // 3) Throttled progress events
-            if idx % 100 == 0 {
-                let scanned = idx + 1;
-                let progress = scanned as f32 / total as f32;
-                let elapsed = start.elapsed().as_secs_f32();
-                let eta = if progress > 0.0 {
-                    elapsed / progress * (1.0 - progress)
-                } else {
-                    0.0
-                };
-                let _ = window_clone.emit("duplicate_progress", DuplicateProgress { progress, eta_seconds: eta });
-            }
-        });
+        if idx % 100 == 0 {
+            emit_progress(&window_clone, start, idx + 1, total);
+        }
+    });
 
     CANCEL_SCAN.store(false, Ordering::Relaxed);
 
-    // 4) Collect results with >1 path
     let mut result = Vec::new();
     if use_hash {
-        for entry in map_hash.into_iter() {
-            let (hash, paths) = entry;
-            if paths.len() > 1 {
-                let ages = paths
-                    .iter()
-                    .map(|p| file_age_seconds(p))
-                    .collect();
-                let size = std::fs::metadata(&paths[0]).map(|m| m.len()).unwrap_or(0);
-                result.push(DuplicateGroup { tag: "hash".into(), hash, size, paths, ages });
-            }
-        }
+        result.extend(build_groups(map_hash, "hash"));
     }
     if use_dhash {
-        for entry in map_dhash.into_iter() {
-            let (hash, paths) = entry;
-            if paths.len() > 1 {
-                let ages = paths
-                    .iter()
-                    .map(|p| file_age_seconds(p))
-                    .collect();
-                let size = std::fs::metadata(&paths[0]).map(|m| m.len()).unwrap_or(0);
-                result.push(DuplicateGroup { tag: "dhash".into(), hash, size, paths, ages });
-            }
-        }
+        result.extend(build_groups(map_dhash, "dhash"));
     }
 
     Ok(result)

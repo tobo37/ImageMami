@@ -5,6 +5,7 @@ use image::{DynamicImage, imageops::FilterType};
 use memmap2::MmapOptions;
 use rayon::prelude::*;
 use serde::Serialize;
+use serde_json;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, Instant};
@@ -52,24 +53,50 @@ pub fn scan_folder_stream(
     window: Window,
     config: ScanConfig,
 ) -> Result<DuplicateMatches, String> {
-    // Log dHash for all supported images (including webp, jpg, etc.)
+    // Log dHash for all supported images
     eprintln!("Logging dHash for all images under: {:?}", config.root);
     log_all_dhash(&config.root);
 
     let start = Instant::now();
     let mut groups = Vec::new();
 
+    // Collect buckets for byte hash
+    let size_buckets = collect_buckets(&config.root)?;
+    // Collect all images into a single bucket for perceptual DHash
+    let all_images_bucket = vec![collect_all_images(&config.root)];
+
     for method in &config.methods {
-        let buckets = collect_buckets(&config.root)?;
         let mut matches = match method {
-            CompareMethod::ByteHash => process_byte_hash(&buckets)?,
-            CompareMethod::PerceptualDHash { threshold } => process_perceptual_dhash(&buckets, *threshold)?,
+            CompareMethod::ByteHash => process_byte_hash(&size_buckets)?,
+            CompareMethod::PerceptualDHash { threshold } => process_perceptual_dhash(&all_images_bucket, *threshold)?,
         };
         emit_progress(&window, start, matches.len() as f32);
         groups.append(&mut matches);
     }
 
-    Ok(DuplicateMatches { groups })
+    let result = DuplicateMatches { groups };
+    // Log the final result sent to frontend
+    match serde_json::to_string_pretty(&result) {
+        Ok(json) => eprintln!("Frontend result JSON:\n{}", json),
+        Err(e) => eprintln!("Failed to serialize result for frontend: {}", e),
+    }
+    Ok(result)
+}
+
+/// Collect a single bucket of all image paths under the root
+fn collect_all_images(root: &Path) -> Vec<PathBuf> {
+    WalkDir::new(root)
+        .into_iter()
+        .filter_map(Result::ok)
+        .filter(|e| e.file_type().is_file())
+        .map(|e| e.into_path())
+        .filter(|path| {
+            path.extension()
+                .and_then(|s| s.to_str())
+                .map(|ext| ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)))
+                .unwrap_or(false)
+        })
+        .collect()
 }
 
 /// Log dHash for every image file under the root
@@ -130,14 +157,12 @@ fn process_byte_hash(buckets: &[Vec<PathBuf>]) -> Result<Vec<MatchPair>, String>
 /// Step 2b: Process buckets by perceptual dHash and Hamming distance
 fn process_perceptual_dhash(buckets: &[Vec<PathBuf>], threshold: u32) -> Result<Vec<MatchPair>, String> {
     let mut pairs = Vec::new();
-    // Precomputed map from path -> bits
     let mut bit_map = DashMap::<String, u64>::new();
     for bucket in buckets {
         bucket.iter().for_each(|path| {
             if let Ok(hex) = compute_dhash(path) {
                 if let Ok(bits) = u64::from_str_radix(&hex, 16) {
-                    let key = path.display().to_string();
-                    bit_map.insert(key.clone(), bits);
+                    bit_map.insert(path.display().to_string(), bits);
                 }
             }
         });

@@ -98,7 +98,7 @@ interface FileInfo {
 }
 
 interface DuplicateGroup {
-  method: string;
+  method: unknown;
   files: FileInfo[];
 }
 
@@ -127,14 +127,20 @@ let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
 const settings = useSettingsStore();
 
-function tagText(tag: string) {
+function tagText(tag: unknown) {
+  let name: string;
+  if (typeof tag === 'object' && tag !== null) {
+    name = Object.keys(tag)[0];
+  } else {
+    name = String(tag);
+  }
   const map: Record<string, string> = {
     ByteHash: 'hash',
     PerceptualDHash: 'dhash',
   };
-  const key = `duplicate.tags.${map[tag] ?? tag}`;
+  const key = `duplicate.tags.${map[name] ?? name}`;
   const result = t(key);
-  return result === key ? tag : result;
+  return result === key ? name : result;
 }
 
 function formatSize(bytes: number) {

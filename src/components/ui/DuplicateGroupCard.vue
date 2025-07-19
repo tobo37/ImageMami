@@ -24,7 +24,7 @@ import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
   group: {
-    method: string;
+    method: unknown;
     files: {
       path: string;
       age: number;

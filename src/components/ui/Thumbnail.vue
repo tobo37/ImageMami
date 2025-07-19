@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 
 const props = defineProps<{ path: string }>();
 const src = ref('');
 
-onMounted(async () => {
+async function updateSrc() {
   const ext = props.path.split('.').pop()?.toLowerCase();
   const rawExts = ['raw', 'arw', 'dng', 'cr2', 'nef', 'pef', 'rw2', 'sr2'];
   if (ext && rawExts.includes(ext)) {
@@ -15,7 +15,15 @@ onMounted(async () => {
   } else {
     src.value = convertFileSrc(props.path);
   }
-});
+}
+
+onMounted(updateSrc);
+watch(
+  () => props.path,
+  () => {
+    updateSrc();
+  },
+);
 </script>
 
 <template>

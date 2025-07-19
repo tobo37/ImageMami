@@ -23,12 +23,15 @@ const languages = [
   { code: 'de', icon: flagDe },
 ];
 
+const langSelect = ref<HTMLDetailsElement | null>(null);
+
 const currentLang = computed(
   () => languages.find((l) => l.code === locale.value) ?? languages[0],
 );
 
 function setLang(code: string) {
   locale.value = code;
+  langSelect.value?.removeAttribute('open');
 }
 
 onMounted(() => {
@@ -75,7 +78,7 @@ function goBack() {
     </button>
     <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
     <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
-    <details class="lang-select">
+    <details class="lang-select" ref="langSelect">
       <summary>
         <img :src="currentLang.icon" :alt="currentLang.code" class="flag" />
       </summary>

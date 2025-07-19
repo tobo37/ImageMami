@@ -1,17 +1,17 @@
 <template>
   <div class="duplicate-card">
-    <Thumbnail :path="group.paths[0]" class="preview" />
+    <Thumbnail :path="group.files[0].path" class="preview" />
     <div class="path-list">
       <div
-        v-for="(p, i) in group.paths"
-        :key="p"
+        v-for="f in group.files"
+        :key="f.path"
         class="path-row"
-        :class="{ marked: marked.includes(p) }"
+        :class="{ marked: marked.includes(f.path) }"
       >
-        <span class="path" v-html="highlight(p)"></span>
-        <span class="age">{{ formatAge(group.ages[i]) }}</span>
-        <button @click="toggle(p)">
-          {{ marked.includes(p) ? keepText : deleteText }}
+        <span class="path" v-html="highlight(f.path)"></span>
+        <span class="age">{{ formatAge(f.age) }}</span>
+        <button @click="toggle(f.path)">
+          {{ marked.includes(f.path) ? keepText : deleteText }}
         </button>
       </div>
     </div>
@@ -24,11 +24,14 @@ import Thumbnail from './Thumbnail.vue';
 
 const props = defineProps<{
   group: {
-    tag: string;
-    hash: string;
-    size: number;
-    paths: string[];
-    ages: number[];
+    method: string;
+    files: {
+      path: string;
+      age: number;
+      hash?: string;
+      dhash?: string;
+      size: number;
+    }[];
   };
   marked: string[];
   deleteText: string;
@@ -43,9 +46,8 @@ function toggle(path: string) {
 }
 
 const highlightedPaths = computed(() => {
-  const normalized = props.group.paths.map((p) =>
-    p.replace(/\\/g, '/').split('/'),
-  );
+  const paths = props.group.files.map((f) => f.path);
+  const normalized = paths.map((p) => p.replace(/\\/g, '/').split('/'));
   const maxParts = Math.max(...normalized.map((arr) => arr.length));
   const diffIndices: number[] = [];
   for (let i = 0; i < maxParts; i++) {
@@ -60,7 +62,8 @@ const highlightedPaths = computed(() => {
 });
 
 function highlight(path: string) {
-  const idx = props.group.paths.indexOf(path);
+  const paths = props.group.files.map((f) => f.path);
+  const idx = paths.indexOf(path);
   return highlightedPaths.value[idx] ?? path;
 }
 

@@ -5,7 +5,7 @@ mod importer;
 mod preview;
 mod sort;
 
-pub use duplicate::DuplicateGroup;
+pub use duplicate::{CompareMethod, DuplicateMatches, FileInfo, MatchPair, ScanConfig};
 pub use file_formats::ALLOWED_EXTENSIONS;
 pub use importer::ExternalDevice;
 

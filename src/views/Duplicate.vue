@@ -34,10 +34,14 @@
     </div>
 
     <div v-if="duplicates.length" class="duplicate-list">
-      <div v-for="d in duplicates" :key="d.hash" class="duplicate-group">
+      <div
+        v-for="d in duplicates"
+        :key="d.files[0].path"
+        class="duplicate-group"
+      >
         <h3>
-          {{ tagText(d.tag) }}
-          <small>{{ formatSize(d.size) }}</small>
+          {{ tagText(d.method) }}
+          <small>{{ formatSize(d.files[0].size) }}</small>
         </h3>
         <DuplicateGroupCard
           :group="d"
@@ -85,18 +89,20 @@ import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
 import DestinationSelector from '../components/ui/DestinationSelector.vue';
 import { useSettingsStore } from '../stores/settings';
 
-interface DuplicateGroup {
-  tag: string;
-  hash: string;
+interface FileInfo {
+  path: string;
+  age: number;
   size: number;
-  paths: string[];
-  ages: number[];
+  hash?: string;
+  dhash?: string;
 }
 
-interface DuplicateProgress {
-  progress: number;
-  eta_seconds: number;
+interface DuplicateGroup {
+  method: string;
+  files: FileInfo[];
 }
+
+type DuplicateProgress = [number, number];
 
 const duplicates = ref<DuplicateGroup[]>([]);
 const busy = ref(false);
@@ -122,7 +128,11 @@ const { t } = useI18n();
 const settings = useSettingsStore();
 
 function tagText(tag: string) {
-  const key = `duplicate.tags.${tag}`;
+  const map: Record<string, string> = {
+    ByteHash: 'hash',
+    PerceptualDHash: 'dhash',
+  };
+  const key = `duplicate.tags.${map[tag] ?? tag}`;
   const result = t(key);
   return result === key ? tag : result;
 }
@@ -149,10 +159,12 @@ function updateMarked(path: string, value: string) {
 
 function autoMark() {
   duplicates.value.forEach((g) => {
-    if (g.paths.length <= 1) return;
-    const maxAge = Math.max(...g.ages);
-    const keepIdx = g.ages.indexOf(maxAge);
-    g.paths.forEach((p, idx) => {
+    if (g.files.length <= 1) return;
+    const ages = g.files.map((f) => f.age);
+    const maxAge = Math.max(...ages);
+    const keepIdx = ages.indexOf(maxAge);
+    g.files.forEach((f, idx) => {
+      const p = f.path;
       if (idx === keepIdx) {
         const i = marked.value.indexOf(p);
         if (i !== -1) marked.value.splice(i, 1);
@@ -174,16 +186,19 @@ async function scanFolder(path: string) {
     unlisten = null;
   }
   unlisten = await listen<DuplicateProgress>('duplicate_progress', (e) => {
-    progress.value = e.payload.progress;
-    eta.value = e.payload.eta_seconds;
+    progress.value = e.payload[0];
+    eta.value = e.payload[1];
   });
   try {
-    const results = await invoke<DuplicateGroup[]>('scan_folder_stream_multi', {
-      path,
-      tags: modes.value,
-    });
+    const res = await invoke<{ groups: DuplicateGroup[] }>(
+      'scan_folder_stream_multi',
+      {
+        path,
+        tags: modes.value,
+      },
+    );
     if (!cancelled.value) {
-      duplicates.value = results;
+      duplicates.value = res.groups;
     }
   } finally {
     busy.value = false;
@@ -216,17 +231,10 @@ async function confirmDelete() {
   showConfirm.value = false;
   duplicates.value = duplicates.value
     .map((g) => {
-      const newPaths: string[] = [];
-      const newAges: number[] = [];
-      g.paths.forEach((p, idx) => {
-        if (!marked.value.includes(p)) {
-          newPaths.push(p);
-          newAges.push(g.ages[idx]);
-        }
-      });
-      return { ...g, paths: newPaths, ages: newAges };
+      const files = g.files.filter((f) => !marked.value.includes(f.path));
+      return { ...g, files };
     })
-    .filter((g) => g.paths.length > 0);
+    .filter((g) => g.files.length > 0);
   marked.value = [];
 }
 

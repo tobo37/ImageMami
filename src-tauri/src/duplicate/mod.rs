@@ -14,7 +14,7 @@ pub async fn scan_folder_stream_multi(
         .into_iter()
         .filter_map(|t| match t.as_str() {
             "hash" => Some(CompareMethod::ByteHash),
-            "dhash" => Some(CompareMethod::PerceptualDHash),
+            "dhash" => Some(CompareMethod::PerceptualDHash { threshold: 5 }),
             _ => None,
         })
         .collect();

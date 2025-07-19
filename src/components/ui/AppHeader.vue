@@ -2,6 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import flagEn from '@/assets/flag-en.svg';
+import flagDe from '@/assets/flag-de.svg';
 
 const theme = ref<'light' | 'dark'>('light');
 
@@ -17,9 +19,17 @@ const headerTitle = computed(() => {
 });
 
 const languages = [
-  { code: 'en', label: 'EN' },
-  { code: 'de', label: 'DE' },
+  { code: 'en', icon: flagEn },
+  { code: 'de', icon: flagDe },
 ];
+
+const currentLang = computed(
+  () => languages.find((l) => l.code === locale.value) ?? languages[0],
+);
+
+function setLang(code: string) {
+  locale.value = code;
+}
 
 onMounted(() => {
   theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -65,16 +75,20 @@ function goBack() {
     </button>
     <span v-if="headerTitle" class="app-title">{{ headerTitle }}</span>
     <button @click="toggleTheme">{{ theme === 'dark' ? '☀️' : '🌙' }}</button>
-    <select v-model="locale" class="lang-select" aria-label="Language">
-      <option
-        v-for="lang in languages"
-        :key="lang.code"
-        :value="lang.code"
-        :style="{ color: 'var(--text-color)' }"
-      >
-        {{ lang.label }}
-      </option>
-    </select>
+    <details class="lang-select">
+      <summary>
+        <img :src="currentLang.icon" :alt="currentLang.code" class="flag" />
+      </summary>
+      <div class="lang-options">
+        <button
+          v-for="lang in languages"
+          :key="lang.code"
+          @click.prevent="setLang(lang.code)"
+        >
+          <img :src="lang.icon" :alt="lang.code" class="flag" />
+        </button>
+      </div>
+    </details>
   </header>
 </template>
 
@@ -95,14 +109,45 @@ function goBack() {
   text-transform: uppercase;
 }
 .lang-select {
+  position: relative;
   margin-left: 0.5rem;
+}
+
+.lang-select summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.lang-select summary::-webkit-details-marker {
+  display: none;
+}
+
+.flag {
+  width: 24px;
+  height: auto;
+}
+
+.lang-options {
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  z-index: 10;
+}
+
+.lang-options button {
   background: transparent;
   border: none;
-  font-size: 1.1rem;
+  padding: 0.25rem;
   cursor: pointer;
-  color: var(--text-color);
 }
-.lang-select:focus {
-  outline: none;
+
+.lang-options button:hover {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 80%);
 }
 </style>

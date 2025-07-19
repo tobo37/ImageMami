@@ -2,8 +2,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import flagEn from '@/assets/flag-en.svg';
-import flagDe from '@/assets/flag-de.svg';
+import flagEn from '../../assets/flag-en.svg?url';
+import flagDe from '../../assets/flag-de.svg?url';
 
 const theme = ref<'light' | 'dark'>('light');
 

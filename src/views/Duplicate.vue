@@ -277,7 +277,7 @@ onBeforeUnmount(() => {
 .duplicate-list {
   margin-top: 1.5rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(1fr);
   gap: 1rem;
 }
 

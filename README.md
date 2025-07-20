@@ -40,3 +40,8 @@ sudo apt install -y libwebkit2gtk-4.1-dev \
 curl -fsSL https://bun.sh/install | bash
 bun install
 bun run tauri build
+
+
+## flamegraph
+cargo install flamegraph
+flamegraph --root -- ./src-tauri/target/release/imagemami

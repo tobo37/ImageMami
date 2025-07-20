@@ -44,4 +44,5 @@ bun run tauri build
 
 ## flamegraph
 cargo install flamegraph
+bun run tauri build
 flamegraph --root -- ./src-tauri/target/release/imagemami

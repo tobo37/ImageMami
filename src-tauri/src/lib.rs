@@ -27,6 +27,7 @@ pub fn run() {
             importer::list_external_devices,
             importer::list_all_disks,
             importer::import_device,
+            importer::import_device_stream,
             blackhole::scan_blackhole_stream,
             blackhole::import_blackhole,
             preview::generate_thumbnail,

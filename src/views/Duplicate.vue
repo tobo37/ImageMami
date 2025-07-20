@@ -276,9 +276,9 @@ onBeforeUnmount(() => {
 
 .duplicate-list {
   margin-top: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(1fr);
+  gap: 1rem;
 }
 
 .duplicate-group h3 {

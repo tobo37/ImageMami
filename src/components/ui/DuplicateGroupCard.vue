@@ -2,7 +2,7 @@
   <div class="duplicate-card">
     <Thumbnail :path="group.files[0].path" class="preview" />
     <div class="path-list">
-      <div
+      <label
         v-for="f in group.files"
         :key="f.path"
         class="path-row"
@@ -15,7 +15,7 @@
         />
         <span class="path" v-html="highlight(f.path)"></span>
         <span class="age">{{ formatAge(f.age) }}</span>
-      </div>
+      </label>
     </div>
   </div>
 </template>
@@ -100,19 +100,25 @@ function formatAge(sec: number) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
 }
 .path-row .path {
   flex: 1;
   word-break: break-word;
-  font-size: 0.8rem;
+  font-size: 1rem;
 }
 .path-row .age {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
 }
 .path-row input[type='checkbox'] {
   accent-color: red;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.path-row b {
+  font-weight: 900;
 }
 .path-row.marked .path {
   text-decoration: line-through;

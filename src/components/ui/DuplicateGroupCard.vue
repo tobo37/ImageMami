@@ -8,11 +8,13 @@
         class="path-row"
         :class="{ marked: marked.includes(f.path) }"
       >
+        <input
+          type="checkbox"
+          :checked="marked.includes(f.path)"
+          @change="(e) => toggle(f.path, e)"
+        />
         <span class="path" v-html="highlight(f.path)"></span>
         <span class="age">{{ formatAge(f.age) }}</span>
-        <button @click="toggle(f.path)">
-          {{ marked.includes(f.path) ? keepText : deleteText }}
-        </button>
       </div>
     </div>
   </div>
@@ -40,9 +42,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{ decision: [path: string, value: string] }>();
 
-function toggle(path: string) {
-  if (props.marked.includes(path)) emit('decision', path, 'keep');
-  else emit('decision', path, 'delete');
+function toggle(path: string, e: Event) {
+  const checked = (e.target as HTMLInputElement).checked;
+  if (checked) emit('decision', path, 'delete');
+  else emit('decision', path, 'keep');
 }
 
 const highlightedPaths = computed(() => {
@@ -108,13 +111,8 @@ function formatAge(sec: number) {
   color: var(--text-muted);
   white-space: nowrap;
 }
-.path-row button {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  background: red;
-  color: white;
+.path-row input[type='checkbox'] {
+  accent-color: red;
 }
 .path-row.marked .path {
   text-decoration: line-through;

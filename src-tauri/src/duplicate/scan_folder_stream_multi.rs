@@ -1,7 +1,7 @@
 use crate::file_formats::ALLOWED_EXTENSIONS;
 use blake3;
 use dashmap::DashMap;
-use image::{DynamicImage, imageops::FilterType};
+use image::{imageops::FilterType};
 use memmap2::MmapOptions;
 use rayon::prelude::*;
 use serde::Serialize;
@@ -157,7 +157,7 @@ fn process_byte_hash(buckets: &[Vec<PathBuf>]) -> Result<Vec<MatchPair>, String>
 /// Step 2b: Process buckets by perceptual dHash and Hamming distance
 fn process_perceptual_dhash(buckets: &[Vec<PathBuf>], threshold: u32) -> Result<Vec<MatchPair>, String> {
     let mut pairs = Vec::new();
-    let mut bit_map = DashMap::<String, u64>::new();
+    let bit_map = DashMap::<String, u64>::new();
     for bucket in buckets {
         bucket.iter().for_each(|path| {
             if let Ok(hex) = compute_dhash(path) {

@@ -19,3 +19,12 @@ pub fn list_all_disks() -> Result<Vec<ExternalDevice>, String> {
 pub async fn import_device(device_path: String, dest_path: String) -> Result<(), String> {
     import_device::import_device(device_path, dest_path).await
 }
+
+#[tauri::command]
+pub async fn import_device_stream(
+    window: tauri::Window,
+    device_path: String,
+    dest_path: String,
+) -> Result<(), String> {
+    import_device::import_device_stream(window, device_path, dest_path).await
+}

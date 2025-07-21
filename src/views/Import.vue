@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useSettingsStore } from '../stores/settings';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 import DestinationSelector from '../components/ui/DestinationSelector.vue';
 import DeviceCard from '../components/ui/DeviceCard.vue';
@@ -13,9 +14,17 @@ interface Device {
   total: number;
 }
 
+interface ImportProgress {
+  total: number;
+  copied: number;
+  current: string;
+}
+
 const settings = useSettingsStore();
 const devices = ref<Device[]>([]);
 const busyPath = ref<string | null>(null);
+const progressInfo = ref<ImportProgress | null>(null);
+let unlisten: UnlistenFn | null = null;
 let pollTimer: number | null = null;
 
 onMounted(() => {
@@ -47,13 +56,26 @@ function scheduleNext() {
 async function copyDevice(path: string) {
   if (!settings.importDestination) return;
   busyPath.value = path;
+  progressInfo.value = null;
+  if (unlisten) {
+    unlisten();
+    unlisten = null;
+  }
+  unlisten = await listen<ImportProgress>('import_progress', (e) => {
+    progressInfo.value = e.payload;
+  });
   try {
-    await invoke('import_device', {
+    await invoke('import_device_stream', {
       devicePath: path,
       destPath: settings.importDestination,
     });
   } finally {
     busyPath.value = null;
+    if (unlisten) {
+      unlisten();
+      unlisten = null;
+    }
+    progressInfo.value = null;
   }
 }
 
@@ -101,6 +123,11 @@ function formatSize(bytes: number) {
         />
       </div>
 
+      <div v-if="busyPath && progressInfo" class="status">
+        {{ progressInfo.copied }} / {{ progressInfo.total }} -
+        {{ progressInfo.current }}
+      </div>
+
       <p v-else class="placeholder">-</p>
     </section>
   </div>
@@ -134,4 +161,9 @@ function formatSize(bytes: number) {
 .icon-rotate-cw::before {
   content: '⟳';
 } /* simple icon-stub */
+
+.status {
+  text-align: center;
+  margin-top: 0.5rem;
+}
 </style>

@@ -37,12 +37,11 @@ sudo apt install -y libwebkit2gtk-4.1-dev \
  libssl-dev \
  libayatana-appindicator3-dev \
  librsvg2-dev
-curl -fsSL https://bun.sh/install | bash
-bun install
-bun run tauri build
-
+npm install
+npm run tauri-build
 
 ## flamegraph
+
 cargo install flamegraph
-bun run tauri build
+npm run tauri-build
 flamegraph --root -- ./src-tauri/target/release/imagemami

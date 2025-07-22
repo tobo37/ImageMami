@@ -1,33 +1,69 @@
 name: build-and-upload-tauri
-# Wird gestartet, sobald du im UI einen (Draft-)Release anlegst.
+
+# ──────── TRIGGERS ──────────────────────────────────────────────────────────────
 on:
+  # automatic: fires once when you create a draft release
   release:
     types: [created]
 
-# Gemeinsame Rechte: Artefakte an Releases anhängen
+  # manual: shows a “Run workflow” button in the Actions tab
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to rebuild (leave blank for the latest release)'
+        required: false
+        type: string
+
+# the workflow needs write access to upload assets
 permissions:
   contents: write
 
+# ──────── BUILD JOB ────────────────────────────────────────────────────────────
 jobs:
   build-tauri:
-    # Mehrere Plattformen parallel bauen
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-latest            # Apple-Silicon
+          # Apple Silicon
+          - platform: macos-latest
             args: "--target aarch64-apple-darwin"
-          - platform: macos-latest            # Intel-Mac
+          # Intel Mac
+          - platform: macos-latest
             args: "--target x86_64-apple-darwin"
-          - platform: ubuntu-22.04            # Linux
+          # Linux
+          - platform: ubuntu-22.04
             args: ""
-          - platform: windows-latest          # Windows
+          # Windows
+          - platform: windows-latest
             args: ""
+
     runs-on: ${{ matrix.platform }}
 
     steps:
+      # — Check out sources -----------------------------------------------------
       - uses: actions/checkout@v4
 
+      # — Resolve the release ID if this is a manual run ------------------------
+      - name: Get release ID (manual trigger only)
+        if: github.event_name == 'workflow_dispatch'
+        id: rel
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const core   = require('@actions/core')
+            const tag    = core.getInput('tag') || null
+            const owner  = context.repo.owner
+            const repo   = context.repo.repo
+            let release
+            if (tag) {
+              release = await github.rest.repos.getReleaseByTag({ owner, repo, tag })
+            } else {
+              release = await github.rest.repos.getLatestRelease({ owner, repo })
+            }
+            core.setOutput('id', release.data.id)
+
+      # — Node / Rust toolchains ------------------------------------------------
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -38,7 +74,8 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Ubuntu-Abhängigkeiten
+      # — Linux-only system deps -----------------------------------------------
+      - name: Install Ubuntu dependencies
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
@@ -49,20 +86,28 @@ jobs:
             librsvg2-dev \
             patchelf
 
-      - name: Frontend-Abhängigkeiten
-        run: npm install           # anpassen, falls du npm/pnpm/bun nutzt
+      # — Front‑end deps --------------------------------------------------------
+      - name: Install front‑end dependencies
+        run: npm install        # switch to pnpm/bun if you prefer
 
-      # ► Hier passiert der eigentliche Tauri-Build samt Upload
-      - uses: tauri-apps/tauri-action@v0
+      # — Tauri build + upload --------------------------------------------------
+      - name: Build & upload Tauri bundles
+        uses: tauri-apps/tauri-action@v0.5.22
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Release-ID kommt direkt aus dem Event-Payload
-          releaseId: ${{ github.event.release.id }}
+          # manual run → use the ID we just looked up
+          # release event → ID is in the event payload
+          releaseId: ${{ github.event_name == 'workflow_dispatch'
+                         && steps.rel.outputs.id
+                         || github.event.release.id }}
           args: ${{ matrix.args }}
 
-  # OPTIONAL: Release nach fertigem Build automatisch veröffentlichen
+  # ──────── (OPTIONAL) PUBLISH RELEASE JOB ─────────────────────────────────────
+  # If you want the draft to be published automatically **only** for the normal
+  # release trigger (not for manual rebuilds), keep this job as‑is.
   publish-release:
+    if: github.event_name == 'release'        # skip on manual runs
     needs: build-tauri
     runs-on: ubuntu-latest
     steps:
@@ -74,8 +119,8 @@ jobs:
           script: |
             github.rest.repos.updateRelease({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo:  context.repo.repo,
               release_id: process.env.RELEASE_ID,
-              draft: false,
+              draft:      false,
               prerelease: false
             })

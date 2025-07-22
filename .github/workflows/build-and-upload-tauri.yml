@@ -1,0 +1,81 @@
+name: build-and-upload-tauri
+# Wird gestartet, sobald du im UI einen (Draft-)Release anlegst.
+on:
+  release:
+    types: [created]
+
+# Gemeinsame Rechte: Artefakte an Releases anhängen
+permissions:
+  contents: write
+
+jobs:
+  build-tauri:
+    # Mehrere Plattformen parallel bauen
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest            # Apple-Silicon
+            args: "--target aarch64-apple-darwin"
+          - platform: macos-latest            # Intel-Mac
+            args: "--target x86_64-apple-darwin"
+          - platform: ubuntu-22.04            # Linux
+            args: ""
+          - platform: windows-latest          # Windows
+            args: ""
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Ubuntu-Abhängigkeiten
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Frontend-Abhängigkeiten
+        run: npm install           # anpassen, falls du npm/pnpm/bun nutzt
+
+      # ► Hier passiert der eigentliche Tauri-Build samt Upload
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Release-ID kommt direkt aus dem Event-Payload
+          releaseId: ${{ github.event.release.id }}
+          args: ${{ matrix.args }}
+
+  # OPTIONAL: Release nach fertigem Build automatisch veröffentlichen
+  publish-release:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        uses: actions/github-script@v6
+        env:
+          RELEASE_ID: ${{ github.event.release.id }}
+        with:
+          script: |
+            github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: process.env.RELEASE_ID,
+              draft: false,
+              prerelease: false
+            })

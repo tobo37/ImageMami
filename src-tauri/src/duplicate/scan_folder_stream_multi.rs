@@ -53,9 +53,15 @@ pub fn scan_folder_stream(
     window: Window,
     config: ScanConfig,
 ) -> Result<DuplicateMatches, String> {
-    // Log dHash for all supported images
-    eprintln!("Logging dHash for all images under: {:?}", config.root);
-    log_all_dhash(&config.root);
+    // Log dHash only when perceptual comparison is enabled
+    let uses_perceptual = config
+        .methods
+        .iter()
+        .any(|m| matches!(m, CompareMethod::PerceptualDHash { .. }));
+    if uses_perceptual {
+        eprintln!("Logging dHash for all images under: {:?}", config.root);
+        log_all_dhash(&config.root);
+    }
 
     let start = Instant::now();
     let mut groups = Vec::new();

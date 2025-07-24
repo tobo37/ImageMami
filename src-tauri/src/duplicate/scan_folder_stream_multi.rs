@@ -26,6 +26,14 @@ pub enum CompareMethod {
 }
 
 /// Metadata for a single file
+#[derive(Clone)]
+struct FileEntry {
+    path: PathBuf,
+    size: u64,
+    modified: SystemTime,
+}
+
+/// Metadata for a single file (serialized)
 #[derive(Serialize, Clone)]
 pub struct FileInfo {
     pub hash: Option<String>,
@@ -49,130 +57,157 @@ pub struct DuplicateMatches {
 }
 
 /// Entry point: scan folder and return duplicates
-pub fn scan_folder_stream(
-    window: Window,
-    config: ScanConfig,
-) -> Result<DuplicateMatches, String> {
+pub fn scan_folder_stream(window: Window, config: ScanConfig) -> Result<DuplicateMatches, String> {
     let start = Instant::now();
     let mut groups = Vec::new();
 
-    // Collect buckets for byte hash
-    let size_buckets = collect_buckets(&config.root)?;
-    // Collect all images into a single bucket for perceptual DHash
-    let all_images_bucket = vec![collect_all_images(&config.root)];
+    // 🚀 Unified scan
+    let all_entries = collect_entries(&config.root);
+
+    // Group by file size (for ByteHash)
+    let size_buckets: Vec<Vec<FileEntry>> = {
+        let by_size = DashMap::<u64, Vec<FileEntry>>::new();
+        all_entries.iter().for_each(|entry| {
+            by_size.entry(entry.size).or_default().push(entry.clone());
+        });
+        by_size
+            .into_iter()
+            .filter_map(|(_, v)| if v.len() > 1 { Some(v) } else { None })
+            .collect()
+    };
+
+    // Prepare all image entries for DHash
+    let all_images_bucket = vec![all_entries.clone()]; // or filtered if needed
 
     for method in &config.methods {
         let mut matches = match method {
             CompareMethod::ByteHash => process_byte_hash(&size_buckets)?,
-            CompareMethod::PerceptualDHash { threshold } => process_perceptual_dhash(&all_images_bucket, *threshold)?,
+            CompareMethod::PerceptualDHash { threshold } => {
+                process_perceptual_dhash(&all_images_bucket, *threshold)?
+            }
         };
+
         emit_progress(&window, start, matches.len() as f32);
         groups.append(&mut matches);
     }
 
     let result = DuplicateMatches { groups };
-    // Log the final result sent to frontend
+
     match serde_json::to_string_pretty(&result) {
         Ok(json) => eprintln!("Frontend result JSON:\n{}", json),
         Err(e) => eprintln!("Failed to serialize result for frontend: {}", e),
     }
+
     Ok(result)
 }
 
-/// Collect a single bucket of all image paths under the root
-fn collect_all_images(root: &Path) -> Vec<PathBuf> {
+fn collect_entries(root: &Path) -> Vec<FileEntry> {
     WalkDir::new(root)
         .into_iter()
+        .par_bridge()
         .filter_map(Result::ok)
         .filter(|e| e.file_type().is_file())
-        .map(|e| e.into_path())
-        .filter(|path| {
-            path.extension()
-                .and_then(|s| s.to_str())
-                .map(|ext| ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)))
-                .unwrap_or(false)
+        .filter_map(|entry| {
+            let path = entry.into_path();
+            if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
+                if ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)) {
+                    if let Ok(meta) = std::fs::metadata(&path) {
+                        return Some(FileEntry {
+                            path,
+                            size: meta.len(),
+                            modified: meta.modified().unwrap_or(SystemTime::UNIX_EPOCH),
+                        });
+                    }
+                }
+            }
+            None
         })
         .collect()
 }
 
-/// Step 1: Walk root directory and bucket files by size
-fn collect_buckets(root: &Path) -> Result<Vec<Vec<PathBuf>>, String> {
-    let by_size: DashMap<u64, Vec<PathBuf>> = DashMap::new();
-    for entry in WalkDir::new(root).into_iter().filter_map(Result::ok) {
-        if !entry.file_type().is_file() { continue; }
-        let path = entry.path().to_path_buf();
-        if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
-            if ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)) {
-                if let Ok(meta) = path.metadata() {
-                    by_size.entry(meta.len()).or_default().push(path);
-                }
-            }
-        }
-    }
-    Ok(by_size.into_iter()
-        .filter_map(|(_, v)| if v.len() > 1 { Some(v) } else { None })
-        .collect())
-}
-
-/// Step 2a: Process buckets by byte-wise BLAKE3 hash
-fn process_byte_hash(buckets: &[Vec<PathBuf>]) -> Result<Vec<MatchPair>, String> {
+/// Process buckets by byte-wise BLAKE3 hash
+fn process_byte_hash(buckets: &[Vec<FileEntry>]) -> Result<Vec<MatchPair>, String> {
     let mut pairs = Vec::new();
+
     for bucket in buckets {
-        let map = DashMap::<String, Vec<String>>::new();
-        bucket.par_iter().for_each(|path| {
-            if let Ok(hash) = compute_blake3(path) {
-                map.entry(hash).or_default().push(path.display().to_string());
+        let map = DashMap::<String, Vec<FileEntry>>::new();
+
+        bucket.par_iter().for_each(|entry| {
+            if let Ok(hash) = compute_blake3(&entry.path) {
+                map.entry(hash).or_default().push(entry.clone());
             }
         });
-        pairs.extend(map.into_iter().filter_map(|(hash, paths)| {
-            if paths.len() > 1 {
-                let files = paths.into_iter().map(|p| to_file_info(Some(hash.clone()), None, p)).collect();
-                Some(MatchPair { method: CompareMethod::ByteHash, files })
-            } else { None }
+
+        pairs.extend(map.into_iter().filter_map(|(hash, entries)| {
+            if entries.len() > 1 {
+                let files = entries.into_iter().map(|e| {
+                    to_file_info(Some(hash.clone()), None, e)
+                }).collect();
+                Some(MatchPair {
+                    method: CompareMethod::ByteHash,
+                    files,
+                })
+            } else {
+                None
+            }
         }));
     }
+
     Ok(pairs)
 }
 
-/// Step 2b: Process buckets by perceptual dHash and Hamming distance
-fn process_perceptual_dhash(buckets: &[Vec<PathBuf>], threshold: u32) -> Result<Vec<MatchPair>, String> {
+/// Process buckets by perceptual dHash and Hamming distance
+fn process_perceptual_dhash(buckets: &[Vec<FileEntry>], threshold: u32) -> Result<Vec<MatchPair>, String> {
     let mut pairs = Vec::new();
     let bit_map = DashMap::<String, u64>::new();
+
+    // Step 1: Compute dHashes in parallel
     for bucket in buckets {
-        bucket.iter().for_each(|path| {
-            if let Ok(hex) = compute_dhash(path) {
+        bucket.par_iter().for_each(|entry| {
+            if let Ok(hex) = compute_dhash(&entry.path) {
                 if let Ok(bits) = u64::from_str_radix(&hex, 16) {
-                    bit_map.insert(path.display().to_string(), bits);
+                    bit_map.insert(entry.path.display().to_string(), bits);
                 }
             }
         });
     }
 
+    // Step 2: Group similar images
     for bucket in buckets {
-        let mut items: Vec<(u64, String)> = bucket.iter().filter_map(|path| {
-            let key = path.display().to_string();
-            bit_map.get(&key).map(|b| (*b, key.clone()))
-        }).collect();
+        let mut entries: Vec<(u64, FileEntry)> = bucket.iter()
+            .filter_map(|entry| {
+                let key = entry.path.display().to_string();
+                bit_map.get(&key).map(|bits| (*bits, entry.clone()))
+            })
+            .collect();
 
-        while let Some((base_bits, base_path)) = items.pop() {
-            let mut group = vec![base_path.clone()];
-            items.retain(|&(other_bits, ref p)| {
-                let dist = hamming_distance(base_bits, other_bits);
-                eprintln!("Comparing {} vs {} -> distance {}", base_path, p, dist);
+        while let Some((base_bits, base_entry)) = entries.pop() {
+            let mut group = vec![base_entry.clone()];
+            entries.retain(|(other_bits, entry)| {
+                let dist = hamming_distance(base_bits, *other_bits);
                 if dist <= threshold {
-                    group.push(p.clone());
+                    group.push(entry.clone());
                     false
-                } else { true }
+                } else {
+                    true
+                }
             });
+
             if group.len() > 1 {
-                let files = group.into_iter().map(|p| {
-                    let bits = bit_map.get(&p).map(|b| *b).unwrap_or(base_bits);
-                    to_file_info(None, Some(format!("{:016x}", bits)), p)
+                let files = group.into_iter().map(|entry| {
+                    let key = entry.path.display().to_string();
+                    let bits = bit_map.get(&key).map(|v| *v).unwrap_or(base_bits);
+                    to_file_info(None, Some(format!("{:016x}", bits)), entry)
                 }).collect();
-                pairs.push(MatchPair { method: CompareMethod::PerceptualDHash { threshold }, files });
+
+                pairs.push(MatchPair {
+                    method: CompareMethod::PerceptualDHash { threshold },
+                    files,
+                });
             }
         }
     }
+
     Ok(pairs)
 }
 
@@ -183,10 +218,19 @@ fn emit_progress(window: &Window, start: Instant, processed: f32) {
 }
 
 /// Convert to FileInfo struct
-fn to_file_info(hash: Option<String>, dhash: Option<String>, path: String) -> FileInfo {
-    let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or_default();
-    let age = file_age_seconds(&path);
-    FileInfo { hash, dhash, size, path, age }
+fn to_file_info(hash: Option<String>, dhash: Option<String>, entry: FileEntry) -> FileInfo {
+    let age = SystemTime::now()
+        .duration_since(entry.modified)
+        .map(|d| d.as_secs())
+        .unwrap_or_default();
+
+    FileInfo {
+        hash,
+        dhash,
+        size: entry.size,
+        path: entry.path.display().to_string(),
+        age,
+    }
 }
 
 /// Calculate Hamming distance between two 64-bit values
@@ -201,7 +245,7 @@ fn compute_blake3(path: &Path) -> Result<String, String> {
     Ok(blake3::hash(&mmap).to_hex().to_string())
 }
 
-/// Compute perceptual dHash for an image safely without overflow
+/// Compute perceptual dHash for an image safely
 fn compute_dhash(path: &Path) -> Result<String, String> {
     let img = image::open(path).map_err(|e| e.to_string())?.to_luma8();
     let width = 9;
@@ -219,16 +263,5 @@ fn compute_dhash(path: &Path) -> Result<String, String> {
             }
         }
     }
-    let hex = format!("{:016x}", bits);
-    eprintln!("compute_dhash -> {}: {}", path.display(), hex);
-    Ok(hex)
-}
-
-/// File age in seconds since last modification
-fn file_age_seconds(path: &str) -> u64 {
-    std::fs::metadata(path)
-        .and_then(|m| m.modified())
-        .and_then(|t| SystemTime::now().duration_since(t).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)))
-        .map(|d| d.as_secs())
-        .unwrap_or_default()
+    Ok(format!("{:016x}", bits))
 }

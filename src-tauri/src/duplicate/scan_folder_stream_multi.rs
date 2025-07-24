@@ -53,16 +53,6 @@ pub fn scan_folder_stream(
     window: Window,
     config: ScanConfig,
 ) -> Result<DuplicateMatches, String> {
-    // Log dHash only when perceptual comparison is enabled
-    let uses_perceptual = config
-        .methods
-        .iter()
-        .any(|m| matches!(m, CompareMethod::PerceptualDHash { .. }));
-    if uses_perceptual {
-        eprintln!("Logging dHash for all images under: {:?}", config.root);
-        log_all_dhash(&config.root);
-    }
-
     let start = Instant::now();
     let mut groups = Vec::new();
 
@@ -103,22 +93,6 @@ fn collect_all_images(root: &Path) -> Vec<PathBuf> {
                 .unwrap_or(false)
         })
         .collect()
-}
-
-/// Log dHash for every image file under the root
-fn log_all_dhash(root: &Path) {
-    for entry in WalkDir::new(root).into_iter().filter_map(Result::ok) {
-        if !entry.file_type().is_file() { continue; }
-        let path = entry.path();
-        if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
-            if ALLOWED_EXTENSIONS.iter().any(|ok| ok.eq_ignore_ascii_case(ext)) {
-                match compute_dhash(path) {
-                    Ok(hex) => eprintln!("[dHash] {} -> {}", path.display(), hex),
-                    Err(e) => eprintln!("[dHash error] {} -> {}", path.display(), e),
-                }
-            }
-        }
-    }
 }
 
 /// Step 1: Walk root directory and bucket files by size

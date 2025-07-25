@@ -143,7 +143,7 @@ function updateMarked(path: string, value: 'keep' | 'delete') {
 function autoMark() {
   duplicates.value.forEach((group) => {
     if (group.files.length <= 1) return;
-    const newestFile = group.files.reduce((a, b) => (a.age > b.age ? a : b));
+    const newestFile = group.files.reduce((a, b) => (a.age < b.age ? a : b));
     group.files.forEach((file) => {
       if (file.path === newestFile.path) {
         const index = marked.value.indexOf(file.path);

@@ -2,7 +2,6 @@ mod blackhole;
 mod duplicate;
 mod file_formats;
 mod importer;
-mod preview;
 mod sort;
 
 pub use duplicate::{CompareMethod, DuplicateMatches, FileInfo, MatchPair, ScanConfig};
@@ -30,7 +29,6 @@ pub fn run() {
             importer::import_device_stream,
             blackhole::scan_blackhole_stream,
             blackhole::import_blackhole,
-            preview::generate_thumbnail,
             sort::find_images,
             sort::sort_images,
         ])

@@ -45,3 +45,5 @@ npm run tauri build
 cargo install flamegraph
 npm run tauri build
 flamegraph --root -- ./src-tauri/target/release/imagemami
+or rootless for
+flamegraph -- ./src-tauri/target/release/imagemami

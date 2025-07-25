@@ -5,7 +5,6 @@ const { t } = useI18n();
 
 <template>
   <div class="view">
-    <div class="preview-banner">{{ t('home.previewBanner') }}</div>
     <div class="grid-home">
       <router-link class="card" to="/duplicate">
         <svg

@@ -28,7 +28,12 @@
     <div v-if="busy" class="scan-status">
       <HamsterLoader />
       <div class="status-text">
-        {{ Math.round(progress * 100) }}% - ETA {{ etaDisplay }}
+        <span v-if="progressInfo">
+          {{ progressInfo.processed }} / {{ progressInfo.total }} -
+          {{ formatElapsed(progressInfo.elapsed) }} -
+          {{ progressInfo.current }}
+        </span>
+        <span v-else>{{ Math.round(progress * 100) }}%</span>
         <button class="ghost cancel-button" @click="cancelScan">
           {{ t('common.cancel') }}
         </button>
@@ -108,7 +113,12 @@ interface DuplicateGroup {
   files: FileInfo[];
 }
 
-type DuplicateProgress = [number, number];
+interface DuplicateProgress {
+  processed: number;
+  total: number;
+  elapsed: number;
+  current: string;
+}
 
 // --- Utility Functions ---
 /**
@@ -172,7 +182,7 @@ async function confirmDelete() {
   duplicates.value = duplicates.value
     .map((group) => {
       const remainingFiles = group.files.filter(
-        (file) => !marked.value.includes(file.path)
+        (file) => !marked.value.includes(file.path),
       );
       return { ...group, files: remainingFiles };
     })
@@ -192,38 +202,42 @@ function setDuplicates(newDuplicates: DuplicateGroup[]) {
 // --- State and Logic for Scan Handling ---
 const busy = ref(false);
 const progress = ref(0);
-const eta = ref(0);
+const progressInfo = ref<DuplicateProgress | null>(null);
 const cancelled = ref(false);
 let unlisten: UnlistenFn | null = null;
 
-const etaDisplay = computed(() => {
-  if (eta.value < 1) return '...';
-  if (eta.value >= 60) {
-    const minutes = Math.floor(eta.value / 60);
-    const seconds = Math.round(eta.value % 60).toString().padStart(2, '0');
+function formatElapsed(sec: number) {
+  if (sec >= 60) {
+    const minutes = Math.floor(sec / 60);
+    const seconds = Math.round(sec % 60)
+      .toString()
+      .padStart(2, '0');
     return `${minutes}m ${seconds}s`;
   }
-  return `${eta.value.toFixed(1)}s`;
-});
+  return `${sec.toFixed(1)}s`;
+}
 
 async function startScan(path: string, tags: string[]) {
   if (!path || busy.value) return;
 
   busy.value = true;
   progress.value = 0;
-  eta.value = 0;
+  progressInfo.value = null;
   cancelled.value = false;
 
   if (unlisten) unlisten();
   unlisten = await listen<DuplicateProgress>('duplicate_progress', (event) => {
-    progress.value = event.payload[0];
-    eta.value = event.payload[1];
+    progressInfo.value = event.payload;
+    progress.value =
+      event.payload.total > 0
+        ? event.payload.processed / event.payload.total
+        : 0;
   });
 
   try {
     const result = await invoke<{ groups: DuplicateGroup[] }>(
       'scan_folder_stream_multi',
-      { path, tags }
+      { path, tags },
     );
     if (!cancelled.value) {
       setDuplicates(result.groups);
@@ -362,7 +376,7 @@ h3 small {
 }
 
 .delete-button:hover {
-    background: hsl(0, 80%, 60%);
+  background: hsl(0, 80%, 60%);
 }
 
 .mode-picker {

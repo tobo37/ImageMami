@@ -10,6 +10,8 @@ use serde::Serialize;
 use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, Instant};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use tauri::{Window, Emitter};
 use walkdir::WalkDir;
 
@@ -47,6 +49,14 @@ pub struct FileInfo {
     pub preview: Option<String>, // Feld für die Base64-Vorschau
 }
 
+#[derive(Serialize, Clone)]
+pub struct DuplicateProgress {
+    pub processed: usize,
+    pub total: usize,
+    pub elapsed: f32,
+    pub current: String,
+}
+
 // --- Interne Datenstrukturen zur Optimierung ---
 
 #[derive(Clone)]
@@ -56,7 +66,8 @@ struct FileMetaData {
     modified: SystemTime,
     byte_hash: Option<String>,
     perceptual_hash: Option<u64>,
-    generate_preview_base64: Option<String>, // Internes Feld für die Vorschau
+    // Vorschau wird für Duplikat-Suche nicht benötigt
+    generate_preview_base64: Option<String>,
 }
 
 // --- Hauptlogik ---
@@ -64,10 +75,24 @@ struct FileMetaData {
 pub fn scan_folder_stream(window: Window, config: ScanConfig) -> Result<DuplicateMatches, String> {
     let start = Instant::now();
     let file_paths = find_allowed_files(&config.root);
+    let total = file_paths.len();
+    let processed = Arc::new(AtomicUsize::new(0));
+    let window = Arc::new(window);
 
     let all_metadata: Vec<FileMetaData> = file_paths
         .into_par_iter()
-        .filter_map(|path| process_file_once(path).ok())
+        .filter_map(|path| {
+            let meta = process_file_once(path.clone()).ok();
+            let count = processed.fetch_add(1, Ordering::SeqCst) + 1;
+            emit_progress(
+                &window,
+                start,
+                count,
+                total,
+                path.display().to_string(),
+            );
+            meta
+        })
         .collect();
 
     let mut groups = Vec::new();
@@ -79,7 +104,13 @@ pub fn scan_folder_stream(window: Window, config: ScanConfig) -> Result<Duplicat
                 find_duplicates_by_perceptual_hash(&all_metadata, *threshold)
             }
         };
-        emit_progress(&window, start, matches.len() as f32);
+        emit_progress(
+            &window,
+            start,
+            processed.load(Ordering::SeqCst),
+            total,
+            String::new(),
+        );
         groups.append(&mut matches);
     }
     
@@ -119,16 +150,13 @@ fn process_file_once(path: PathBuf) -> Result<FileMetaData, std::io::Error> {
     // 1. BLAKE3-Hash berechnen (immer)
     let byte_hash = blake3::hash(&buffer).to_hex().to_string();
 
-    // 2. Perceptual Hash und Vorschau nur für Bilder berechnen
-    let (perceptual_hash, generate_preview_base64) = 
-        if let Ok(img) = image::load_from_memory(&buffer) {
-            let p_hash = compute_dhash(&img).ok();
-            // Vorschau generieren, wenn es ein Bild ist
-            let preview = generate_preview_base64(&img).ok(); // Quality set to 80
-            (p_hash, preview)
-        } else {
-            (None, None)
-        };
+    // 2. Perceptual Hash nur für Bilder berechnen
+    let (perceptual_hash, generate_preview_base64) = if let Ok(img) = image::load_from_memory(&buffer) {
+        let p_hash = compute_dhash(&img).ok();
+        (p_hash, None)
+    } else {
+        (None, None)
+    };
 
     Ok(FileMetaData {
         path,
@@ -136,7 +164,7 @@ fn process_file_once(path: PathBuf) -> Result<FileMetaData, std::io::Error> {
         modified,
         byte_hash: Some(byte_hash),
         perceptual_hash,
-        generate_preview_base64, // Vorschau speichern
+        generate_preview_base64,
     })
 }
 
@@ -266,7 +294,21 @@ fn to_file_info(entry: FileMetaData) -> FileInfo {
     }
 }
 
-fn emit_progress(window: &Window, start: Instant, processed: f32) {
+fn emit_progress(
+    window: &Window,
+    start: Instant,
+    processed: usize,
+    total: usize,
+    current: String,
+) {
     let elapsed = start.elapsed().as_secs_f32();
-    let _ = window.emit("duplicate_progress", (processed, elapsed));
+    let _ = window.emit(
+        "duplicate_progress",
+        DuplicateProgress {
+            processed,
+            total,
+            elapsed,
+            current,
+        },
+    );
 }

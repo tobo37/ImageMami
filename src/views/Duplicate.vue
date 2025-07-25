@@ -19,18 +19,20 @@
     <button
       v-if="!busy"
       class="btn"
-      @click="startScan"
+      @click="handleStartScan"
       :disabled="!settings.duplicateDestination"
     >
       {{ busy ? t('duplicate.scanning') : t('blackhole.scan') }}
     </button>
 
-    <HamsterLoader v-if="busy" />
-    <div v-if="busy" class="status">
-      {{ Math.round(progress * 100) }}% - ETA {{ etaDisplay }}
-      <button class="ghost cancel-button" @click="cancelScan">
-        {{ t('common.cancel') }}
-      </button>
+    <div v-if="busy" class="scan-status">
+      <HamsterLoader />
+      <div class="status-text">
+        {{ Math.round(progress * 100) }}% - ETA {{ etaDisplay }}
+        <button class="ghost cancel-button" @click="cancelScan">
+          {{ t('common.cancel') }}
+        </button>
+      </div>
     </div>
 
     <div v-if="duplicates.length" class="duplicate-list">
@@ -48,20 +50,20 @@
           :marked="marked"
           :delete-text="t('common.delete')"
           :keep-text="t('common.keep')"
-          @decision="(path: string, v: string) => updateMarked(path, v)"
+          @decision="(path, v) => updateMarked(path, v as 'keep' | 'delete')"
         />
       </div>
     </div>
 
-    <div v-if="duplicates.length" class="auto-mark-bar">
+    <div v-if="duplicates.length && !busy" class="auto-mark-bar">
       <button class="ghost auto-mark-button" @click="autoMark">
         {{ t('duplicate.autoMark') }}
       </button>
     </div>
 
-    <div v-if="markedCount" class="delete-bar">
+    <div v-if="markedCount > 0" class="delete-bar">
       <button class="delete-button" @click="deleteMarked">
-        {{ t('duplicate.deleteMarked') }}
+        {{ t('duplicate.deleteMarked', { count: markedCount }) }}
       </button>
     </div>
 
@@ -83,16 +85,20 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useI18n } from 'vue-i18n';
+import { useSettingsStore } from '../stores/settings';
+
+// Import UI components
 import HamsterLoader from '../components/ui/HamsterLoader.vue';
 import DuplicateGroupCard from '../components/ui/DuplicateGroupCard.vue';
 import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
 import DestinationSelector from '../components/ui/DestinationSelector.vue';
-import { useSettingsStore } from '../stores/settings';
 
+// --- Type Definitions ---
 interface FileInfo {
   path: string;
   age: number;
   size: number;
+  preview: string; // The thumbnail is now directly included in the data
   hash?: string;
   dhash?: string;
 }
@@ -104,108 +110,126 @@ interface DuplicateGroup {
 
 type DuplicateProgress = [number, number];
 
-const duplicates = ref<DuplicateGroup[]>([]);
-const busy = ref(false);
-const progress = ref(0);
-const eta = ref(0);
-const etaDisplay = computed(() => {
-  if (eta.value >= 60) {
-    const minutes = Math.floor(eta.value / 60);
-    const seconds = Math.round(eta.value % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${eta.value.toFixed(1)}s`;
-});
-const marked = ref<string[]>([]);
-const modes = ref<string[]>(['hash', 'dhash']);
-const showConfirm = ref(false);
-const cancelled = ref(false);
-const markedCount = computed(() => marked.value.length);
-let unlisten: UnlistenFn | null = null;
-const { t } = useI18n();
-const settings = useSettingsStore();
-
-function tagText(tag: unknown) {
-  let name: string;
-  if (typeof tag === 'object' && tag !== null) {
-    name = Object.keys(tag)[0];
-  } else {
-    name = String(tag);
-  }
-  const map: Record<string, string> = {
-    ByteHash: 'hash',
-    PerceptualDHash: 'dhash',
-  };
-  const key = `duplicate.tags.${map[name] ?? name}`;
-  const result = t(key);
-  return result === key ? name : result;
-}
-
-function formatSize(bytes: number) {
+// --- Utility Functions ---
+/**
+ * Formats a size in bytes into a human-readable string (KB, MB, GB).
+ */
+function formatSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let size = bytes,
-    i = 0;
-  while (size >= 1024 && i < units.length - 1) {
-    size /= 1024;
-    i++;
-  }
-  return `${size.toFixed(1)} ${units[i]}`;
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 }
 
-function updateMarked(path: string, value: string) {
+// --- State and Logic for Duplicate Management ---
+const duplicates = ref<DuplicateGroup[]>([]);
+const marked = ref<string[]>([]);
+const showConfirm = ref(false);
+const markedCount = computed(() => marked.value.length);
+
+function updateMarked(path: string, value: 'keep' | 'delete') {
   if (value === 'delete') {
-    if (!marked.value.includes(path)) marked.value.push(path);
+    if (!marked.value.includes(path)) {
+      marked.value.push(path);
+    }
   } else {
     const idx = marked.value.indexOf(path);
-    if (idx !== -1) marked.value.splice(idx, 1);
+    if (idx !== -1) {
+      marked.value.splice(idx, 1);
+    }
   }
 }
 
 function autoMark() {
-  duplicates.value.forEach((g) => {
-    if (g.files.length <= 1) return;
-    const ages = g.files.map((f) => f.age);
-    const maxAge = Math.max(...ages);
-    const keepIdx = ages.indexOf(maxAge);
-    g.files.forEach((f, idx) => {
-      const p = f.path;
-      if (idx === keepIdx) {
-        const i = marked.value.indexOf(p);
-        if (i !== -1) marked.value.splice(i, 1);
-      } else if (!marked.value.includes(p)) {
-        marked.value.push(p);
+  duplicates.value.forEach((group) => {
+    if (group.files.length <= 1) return;
+    const newestFile = group.files.reduce((a, b) => (a.age > b.age ? a : b));
+    group.files.forEach((file) => {
+      if (file.path === newestFile.path) {
+        const index = marked.value.indexOf(file.path);
+        if (index !== -1) {
+          marked.value.splice(index, 1);
+        }
+      } else {
+        if (!marked.value.includes(file.path)) {
+          marked.value.push(file.path);
+        }
       }
     });
   });
 }
 
-async function scanFolder(path: string) {
+function deleteMarked() {
+  if (marked.value.length > 0) {
+    showConfirm.value = true;
+  }
+}
+
+async function confirmDelete() {
+  if (marked.value.length === 0) return;
+  await invoke('delete_files', { paths: marked.value });
+  showConfirm.value = false;
+  duplicates.value = duplicates.value
+    .map((group) => {
+      const remainingFiles = group.files.filter(
+        (file) => !marked.value.includes(file.path)
+      );
+      return { ...group, files: remainingFiles };
+    })
+    .filter((group) => group.files.length > 1);
+  marked.value = [];
+}
+
+function cancelDelete() {
+  showConfirm.value = false;
+}
+
+function setDuplicates(newDuplicates: DuplicateGroup[]) {
+  duplicates.value = newDuplicates;
+  marked.value = [];
+}
+
+// --- State and Logic for Scan Handling ---
+const busy = ref(false);
+const progress = ref(0);
+const eta = ref(0);
+const cancelled = ref(false);
+let unlisten: UnlistenFn | null = null;
+
+const etaDisplay = computed(() => {
+  if (eta.value < 1) return '...';
+  if (eta.value >= 60) {
+    const minutes = Math.floor(eta.value / 60);
+    const seconds = Math.round(eta.value % 60).toString().padStart(2, '0');
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${eta.value.toFixed(1)}s`;
+});
+
+async function startScan(path: string, tags: string[]) {
+  if (!path || busy.value) return;
+
   busy.value = true;
   progress.value = 0;
   eta.value = 0;
-  marked.value = [];
   cancelled.value = false;
-  if (unlisten) {
-    unlisten();
-    unlisten = null;
-  }
-  unlisten = await listen<DuplicateProgress>('duplicate_progress', (e) => {
-    progress.value = e.payload[0];
-    eta.value = e.payload[1];
+
+  if (unlisten) unlisten();
+  unlisten = await listen<DuplicateProgress>('duplicate_progress', (event) => {
+    progress.value = event.payload[0];
+    eta.value = event.payload[1];
   });
+
   try {
-    const res = await invoke<{ groups: DuplicateGroup[] }>(
+    const result = await invoke<{ groups: DuplicateGroup[] }>(
       'scan_folder_stream_multi',
-      {
-        path,
-        tags: modes.value,
-      },
+      { path, tags }
     );
     if (!cancelled.value) {
-      duplicates.value = res.groups;
+      setDuplicates(result.groups);
     }
+  } catch (error) {
+    console.error('Scan failed:', error);
   } finally {
     busy.value = false;
     if (unlisten) {
@@ -213,39 +237,6 @@ async function scanFolder(path: string) {
       unlisten = null;
     }
   }
-}
-
-function startScan() {
-  if (settings.duplicateDestination) {
-    scanFolder(settings.duplicateDestination);
-  }
-}
-
-async function chooseDest() {
-  const selected = await open({ directory: true, multiple: false });
-  if (!selected) return;
-  const path = Array.isArray(selected) ? selected[0] : selected;
-  settings.setDuplicateDestination(path);
-}
-
-function deleteMarked() {
-  showConfirm.value = true;
-}
-
-async function confirmDelete() {
-  await invoke('delete_files', { paths: marked.value });
-  showConfirm.value = false;
-  duplicates.value = duplicates.value
-    .map((g) => {
-      const files = g.files.filter((f) => !marked.value.includes(f.path));
-      return { ...g, files };
-    })
-    .filter((g) => g.files.length > 0);
-  marked.value = [];
-}
-
-function cancelDelete() {
-  showConfirm.value = false;
 }
 
 function cancelScan() {
@@ -259,35 +250,84 @@ function cancelScan() {
 }
 
 onBeforeUnmount(() => {
-  if (unlisten) unlisten();
   invoke('cancel_scan');
+  if (unlisten) {
+    unlisten();
+  }
 });
+
+// --- Component-specific Setup ---
+const { t } = useI18n();
+const settings = useSettingsStore();
+const modes = ref<string[]>(['hash', 'dhash']);
+
+async function chooseDest() {
+  const selected = await open({ directory: true, multiple: false });
+  if (!selected) return;
+  const path = Array.isArray(selected) ? selected[0] : selected;
+  settings.setDuplicateDestination(path);
+}
+
+function handleStartScan() {
+  if (settings.duplicateDestination) {
+    startScan(settings.duplicateDestination, modes.value);
+  }
+}
+
+function tagText(tag: unknown): string {
+  let name: string;
+  if (typeof tag === 'object' && tag !== null) {
+    name = Object.keys(tag)[0];
+  } else {
+    name = String(tag);
+  }
+  const tagMap: Record<string, string> = {
+    ByteHash: 'hash',
+    PerceptualDHash: 'dhash',
+  };
+  const translationKey = `duplicate.tags.${tagMap[name] ?? name}`;
+  const translatedText = t(translationKey);
+  return translatedText === translationKey ? name : translatedText;
+}
 </script>
 
 <style scoped>
 .view {
   padding: 1rem;
+  padding-bottom: 6rem; /* Add padding to avoid overlap with delete bar */
 }
 
-.status {
+.scan-status {
   text-align: center;
+  margin-top: 1rem;
+}
+
+.status-text {
   margin-top: 0.5rem;
 }
 
 .duplicate-list {
   margin-top: 1.5rem;
   display: grid;
-  grid-template-columns: repeat(1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
 .duplicate-group h3 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+h3 small {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
 }
 
 .auto-mark-bar {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   text-align: center;
 }
 
@@ -300,20 +340,29 @@ onBeforeUnmount(() => {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
+  right: 0; /* Use right: 0 instead of width: 100% for better responsiveness */
   display: flex;
   justify-content: center;
+  align-items: center;
   background: var(--card-bg);
   border-top: 1px solid var(--border-color);
-  padding: 0.5rem;
+  padding: 0.75rem;
+  z-index: 10;
 }
 
 .delete-button {
-  background: red;
+  background: hsl(0, 70%, 50%);
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+    background: hsl(0, 80%, 60%);
 }
 
 .mode-picker {
@@ -322,6 +371,7 @@ onBeforeUnmount(() => {
   gap: 1rem;
   align-items: center;
 }
+
 button.ghost {
   background: transparent;
   color: var(--accent-color);

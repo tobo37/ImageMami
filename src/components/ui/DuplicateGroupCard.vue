@@ -1,6 +1,12 @@
 <template>
   <div class="duplicate-card">
-    <Thumbnail :path="group.files[0].path" class="preview" />
+    <!-- Use a standard img tag and bind its src to the thumbnail data URL -->
+    <img
+      v-if="group.files.length > 0 && group.files[0].preview"
+      :src="group.files[0].preview"
+      class="preview"
+      alt="File preview"
+    />
     <div class="path-list">
       <label
         v-for="f in group.files"
@@ -22,19 +28,24 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import Thumbnail from './Thumbnail.vue';
+
+// --- Type Definitions ---
+interface FileInfo {
+  path: string;
+  age: number;
+  size: number;
+  preview: string; // The thumbnail is now part of the FileInfo type
+  hash?: string;
+  dhash?: string;
+}
+
+interface DuplicateGroup {
+  method: unknown;
+  files: FileInfo[];
+}
 
 const props = defineProps<{
-  group: {
-    method: unknown;
-    files: {
-      path: string;
-      age: number;
-      hash?: string;
-      dhash?: string;
-      size: number;
-    }[];
-  };
+  group: DuplicateGroup;
   marked: string[];
   deleteText: string;
   keepText: string;
@@ -60,7 +71,7 @@ const highlightedPaths = computed(() => {
   return normalized.map((arr) =>
     arr
       .map((seg, idx) => (diffIndices.includes(idx) ? `<b>${seg}</b>` : seg))
-      .join('/'),
+      .join('/')
   );
 });
 
@@ -89,6 +100,11 @@ function formatAge(sec: number) {
 }
 .preview {
   flex-shrink: 0;
+  width: 128px; /* Example width */
+  height: 128px; /* Example height */
+  object-fit: cover;
+  border-radius: 0.5rem;
+  background-color: var(--bg-color-secondary);
 }
 .path-list {
   flex: 1;

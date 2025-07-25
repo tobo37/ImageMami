@@ -33,25 +33,21 @@
       </button>
     </div>
 
-    <div v-if="duplicates.length" class="duplicate-list">
-      <div
-        v-for="d in duplicates"
-        :key="d.files[0].path"
-        class="duplicate-group"
-      >
-        <h3>
-          {{ tagText(d.method) }}
-          <small>{{ formatSize(d.files[0].size) }}</small>
-        </h3>
-        <DuplicateGroupCard
-          :group="d"
-          :marked="marked"
-          :delete-text="t('common.delete')"
-          :keep-text="t('common.keep')"
-          @decision="(path: string, v: string) => updateMarked(path, v)"
-        />
-      </div>
-    </div>
+    <VirtualList
+      v-if="duplicates.length"
+      class="duplicate-list"
+      :data-key="(g: DuplicateGroup) => g.files[0].path"
+      :data-sources="duplicates"
+      :data-component="DuplicateGroupItem"
+      :keeps="30"
+      :estimate-size="250"
+      :extra-props="{
+        marked,
+        deleteText: t('common.delete'),
+        keepText: t('common.keep'),
+        onDecision: updateMarked,
+      }"
+    />
 
     <div v-if="duplicates.length" class="auto-mark-bar">
       <button class="ghost auto-mark-button" @click="autoMark">
@@ -84,7 +80,8 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useI18n } from 'vue-i18n';
 import HamsterLoader from '../components/ui/HamsterLoader.vue';
-import DuplicateGroupCard from '../components/ui/DuplicateGroupCard.vue';
+import DuplicateGroupItem from '../components/ui/DuplicateGroupItem.vue';
+import VirtualList from 'vue3-virtual-scroll-list';
 import DeleteConfirmModal from '../components/ui/DeleteConfirmModal.vue';
 import DestinationSelector from '../components/ui/DestinationSelector.vue';
 import { useSettingsStore } from '../stores/settings';
@@ -126,33 +123,6 @@ const markedCount = computed(() => marked.value.length);
 let unlisten: UnlistenFn | null = null;
 const { t } = useI18n();
 const settings = useSettingsStore();
-
-function tagText(tag: unknown) {
-  let name: string;
-  if (typeof tag === 'object' && tag !== null) {
-    name = Object.keys(tag)[0];
-  } else {
-    name = String(tag);
-  }
-  const map: Record<string, string> = {
-    ByteHash: 'hash',
-    PerceptualDHash: 'dhash',
-  };
-  const key = `duplicate.tags.${map[name] ?? name}`;
-  const result = t(key);
-  return result === key ? name : result;
-}
-
-function formatSize(bytes: number) {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let size = bytes,
-    i = 0;
-  while (size >= 1024 && i < units.length - 1) {
-    size /= 1024;
-    i++;
-  }
-  return `${size.toFixed(1)} ${units[i]}`;
-}
 
 function updateMarked(path: string, value: string) {
   if (value === 'delete') {
@@ -276,14 +246,6 @@ onBeforeUnmount(() => {
 
 .duplicate-list {
   margin-top: 1.5rem;
-  display: grid;
-  grid-template-columns: repeat(1fr);
-  gap: 1rem;
-}
-
-.duplicate-group h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
 }
 
 .auto-mark-bar {

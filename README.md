@@ -38,7 +38,7 @@ sudo apt install -y libwebkit2gtk-4.1-dev \
  libayatana-appindicator3-dev \
  librsvg2-dev
 npm install
-npm run tauri-build
+npm run tauri build
 
 ## flamegraph
 

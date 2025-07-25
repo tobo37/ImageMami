@@ -172,7 +172,7 @@ async function confirmDelete() {
   duplicates.value = duplicates.value
     .map((group) => {
       const remainingFiles = group.files.filter(
-        (file) => !marked.value.includes(file.path)
+        (file) => !marked.value.includes(file.path),
       );
       return { ...group, files: remainingFiles };
     })
@@ -200,7 +200,9 @@ const etaDisplay = computed(() => {
   if (eta.value < 1) return '...';
   if (eta.value >= 60) {
     const minutes = Math.floor(eta.value / 60);
-    const seconds = Math.round(eta.value % 60).toString().padStart(2, '0');
+    const seconds = Math.round(eta.value % 60)
+      .toString()
+      .padStart(2, '0');
     return `${minutes}m ${seconds}s`;
   }
   return `${eta.value.toFixed(1)}s`;
@@ -223,7 +225,7 @@ async function startScan(path: string, tags: string[]) {
   try {
     const result = await invoke<{ groups: DuplicateGroup[] }>(
       'scan_folder_stream_multi',
-      { path, tags }
+      { path, tags },
     );
     if (!cancelled.value) {
       setDuplicates(result.groups);
@@ -362,7 +364,7 @@ h3 small {
 }
 
 .delete-button:hover {
-    background: hsl(0, 80%, 60%);
+  background: hsl(0, 80%, 60%);
 }
 
 .mode-picker {

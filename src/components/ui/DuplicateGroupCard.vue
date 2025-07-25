@@ -71,7 +71,7 @@ const highlightedPaths = computed(() => {
   return normalized.map((arr) =>
     arr
       .map((seg, idx) => (diffIndices.includes(idx) ? `<b>${seg}</b>` : seg))
-      .join('/')
+      .join('/'),
   );
 });
 

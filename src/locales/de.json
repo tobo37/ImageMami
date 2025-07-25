@@ -51,5 +51,9 @@
     "copy": "Kopieren",
     "cut": "Ausschneiden",
     "files": "Dateien"
+  },
+  "config": {
+    "title": "Konfiguration",
+    "allowedExtensions": "Erlaubte Endungen"
   }
 }

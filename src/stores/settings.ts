@@ -10,6 +10,33 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.getItem('duplicateDest'),
   );
 
+  const allExtensions = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'bmp',
+    'tif',
+    'tiff',
+    'webp',
+    'heic',
+    'heif',
+    'raw',
+    'arw',
+    'dng',
+    'cr2',
+    'nef',
+    'pef',
+    'rw2',
+    'sr2',
+  ];
+
+  const allowedExtensions = ref<string[]>(
+    JSON.parse(localStorage.getItem('allowedExtensions') ?? 'null') ?? [
+      ...allExtensions,
+    ],
+  );
+
   watch(importDestination, (val) => {
     if (val) {
       localStorage.setItem('importDest', val);
@@ -26,6 +53,14 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   });
 
+  watch(
+    allowedExtensions,
+    (val) => {
+      localStorage.setItem('allowedExtensions', JSON.stringify(val));
+    },
+    { deep: true },
+  );
+
   function setImportDestination(path: string | null) {
     importDestination.value = path;
   }
@@ -34,10 +69,17 @@ export const useSettingsStore = defineStore('settings', () => {
     duplicateDestination.value = path;
   }
 
+  function setAllowedExtensions(exts: string[]) {
+    allowedExtensions.value = exts;
+  }
+
   return {
     importDestination,
     setImportDestination,
     duplicateDestination,
     setDuplicateDestination,
+    allExtensions,
+    allowedExtensions,
+    setAllowedExtensions,
   };
 });

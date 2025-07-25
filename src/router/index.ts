@@ -5,6 +5,7 @@ import ImportView from '../views/Import.vue';
 import SortView from '../views/Sort.vue';
 import Blackhole from '../views/Blackhole.vue';
 import Home from '../views/Home.vue';
+import ConfigView from '../views/Config.vue';
 
 const routes: Array<RouteRecordRaw> = [
   { path: '/', name: 'home', component: Home },
@@ -12,6 +13,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/import', name: 'import', component: ImportView },
   { path: '/sort', name: 'sort', component: SortView },
   { path: '/blackhole', name: 'blackhole', component: Blackhole },
+  { path: '/config', name: 'config', component: ConfigView },
 ];
 
 const router = createRouter({

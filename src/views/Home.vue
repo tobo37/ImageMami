@@ -85,6 +85,32 @@ const { t } = useI18n();
         </svg>
         {{ t('blackhole.title') }}
       </router-link>
+      <router-link class="card" to="/config">
+        <svg
+          class="card-icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 15.5C13.933 15.5 15.5 13.933 15.5 12C15.5 10.067 13.933 8.5 12 8.5C10.067 8.5 8.5 10.067 8.5 12C8.5 13.933 10.067 15.5 12 15.5Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M19.4 15A1.65 1.65 0 0 0 21 13.35C20.69 12.24 20.17 11.18 19.45 10.2C19.17 9.8 19.2 9.25 19.55 8.9L20.85 7.6C21.1 7.35 21.1 6.95 20.85 6.7L17.3 3.15C17.05 2.9 16.65 2.9 16.4 3.15L15.1 4.45C14.75 4.8 14.2 4.83 13.8 4.55C12.82 3.83 11.76 3.31 10.65 3C9 3.6 8.35 5.2 9.95 6.8C10.15 7 10.2 7.3 10.1 7.55L8.5 12C8.55 12.45 8.7 12.95 9 13.45C9.5 14.45 10.4 15.35 11.4 15.85C11.9 16.15 12.4 16.3 12.85 16.35L17.3 14.75C17.55 14.65 17.85 14.7 18.05 14.9C19.65 16.5 21.25 15.85 21.85 14.2C21.54 13.09 21.02 12.03 20.3 11.05"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        {{ t('config.title') }}
+      </router-link>
     </div>
   </div>
 </template>

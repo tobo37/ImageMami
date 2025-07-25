@@ -51,5 +51,9 @@
     "copy": "Copy",
     "cut": "Cut",
     "files": "files"
+  },
+  "config": {
+    "title": "Config",
+    "allowedExtensions": "Allowed extensions"
   }
 }

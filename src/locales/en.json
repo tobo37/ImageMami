@@ -34,19 +34,14 @@
     "refresh": "Refresh",
     "copy": "Copy images"
   },
-  "sort": {
-    "title": "Sort",
-    "choose": "Choose folder",
-    "source": "Source:",
-    "start": "Sort images"
+  "home":{
+    "duplicate": {
+    "title": "Duplikate finden",
+    "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
   },
-  "blackhole": {
-    "title": "Blackhole",
-    "scan": "Scan",
-    "disks": "Drives",
-    "folders": "Folders",
-    "copy": "Copy",
-    "cut": "Cut",
-    "files": "files"
+  "import": {
+    "title": "Bilder importieren",
+    "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
+  }
   }
 }

@@ -2,6 +2,7 @@
   "duplicate": {
     "title": "Duplikate",
     "choose": "Ordner auswählen & scannen",
+    "scan": "Scannen",
     "scanning": "Scanne…",
     "deleteMarked": "Markierte löschen",
     "autoMark": "Automatisch markieren",

@@ -22,7 +22,7 @@
       @click="handleStartScan"
       :disabled="!settings.duplicateDestination"
     >
-      {{ busy ? t('duplicate.scanning') : t('blackhole.scan') }}
+      {{ busy ? t('duplicate.scanning') : t('duplicate.scan') }}
     </button>
 
     <div v-if="busy" class="scan-status">

@@ -35,14 +35,14 @@
     "refresh": "Refresh",
     "copy": "Copy images"
   },
-  "home":{
+  "home": {
     "duplicate": {
-    "title": "Duplikate finden",
-    "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
-  },
-  "import": {
-    "title": "Bilder importieren",
-    "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
-  }
+      "title": "Duplikate finden",
+      "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
+    },
+    "import": {
+      "title": "Bilder importieren",
+      "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
+    }
   }
 }

@@ -51,12 +51,17 @@ function onDrop(event: DragEvent) {
   justify-content: center;
   text-align: center;
   padding: 2.5rem 2rem;
-  background-color: var(--color-background-soft); /* Beispiel: Etwas hellerer Hintergrund */
+  background-color: var(
+    --color-background-soft
+  ); /* Beispiel: Etwas hellerer Hintergrund */
   border-radius: 12px;
   text-decoration: none;
   color: var(--color-text);
   border: 2px solid transparent;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
   min-height: 250px;
 }
 
@@ -66,7 +71,9 @@ function onDrop(event: DragEvent) {
 }
 
 .card.drag-over {
-  border-color: var(--color-primary); /* Hebt die Kachel hervor, wenn eine Datei darüber schwebt */
+  border-color: var(
+    --color-primary
+  ); /* Hebt die Kachel hervor, wenn eine Datei darüber schwebt */
   transform: scale(1.02);
 }
 
@@ -90,7 +97,9 @@ function onDrop(event: DragEvent) {
 
 .card-description {
   font-size: 1rem;
-  color: var(--color-text-soft); /* Leicht ausgegrauter Text für die Beschreibung */
+  color: var(
+    --color-text-soft
+  ); /* Leicht ausgegrauter Text für die Beschreibung */
   margin: 0;
   line-height: 1.5;
 }

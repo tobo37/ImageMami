@@ -15,6 +15,7 @@
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "~2",
     "@tauri-apps/plugin-opener": "^2",
+    "@vueuse/core": "^13.5.0",
     "pinia": "^3.0.3",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.5.13",

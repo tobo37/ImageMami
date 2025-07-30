@@ -33,7 +33,9 @@
     "destination": "Destination:",
     "devices": "External devices",
     "refresh": "Refresh",
-    "copy": "Copy images"
+    "copy": "Copy images",
+    "no_devices_found": "No Devices found",
+    "connect_device_prompt": ""
   },
   "home": {
     "duplicate": {

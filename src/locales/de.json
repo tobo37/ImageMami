@@ -33,7 +33,9 @@
     "destination": "Ziel:",
     "devices": "Externe Geräte",
     "refresh": "Aktualisieren",
-    "copy": "Bilder kopieren"
+    "copy": "Bilder kopieren",
+    "no_devices_found": "Kein Geräte gefunden",
+    "connect_device_prompt": ""
   },
   "home": {
     "duplicate": {

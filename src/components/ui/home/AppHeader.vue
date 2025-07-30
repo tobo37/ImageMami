@@ -38,7 +38,17 @@ watch(
 );
 
 function toggleTheme() {
-  theme.value = theme.value === 'light' ? 'dark' : 'light';
+  // Prüfen, ob der Browser die moderne API unterstützt
+  if (!document.startViewTransition) {
+    // Fallback für ältere Browser ohne Animation
+    theme.value = theme.value === 'light' ? 'dark' : 'light';
+    return;
+  }
+
+  // Starte die sanfte Transition
+  document.startViewTransition(() => {
+    theme.value = theme.value === 'light' ? 'dark' : 'light';
+  });
 }
 
 // --- Navigations-Logik ---

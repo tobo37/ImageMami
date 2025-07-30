@@ -56,6 +56,7 @@ const toggleStyle = computed(() => {
 <style>
 /* From Uiverse.io by Galahhad */ 
 .theme-switch {
+  view-transition-name: theme-toggle-no-freeze; 
   --toggle-size: 30px; /* Dieser Wert wird jetzt dynamisch überschrieben */
   /* the size is adjusted using font-size,
      this is not transform scale,

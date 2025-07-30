@@ -35,6 +35,8 @@ function onChoose() {
 
 <style scoped>
 .dest-card {
+  display: flex; /* NEU: Stellt sicher, dass die Ausrichtung stimmt */
+  align-items: center; /* NEU: Vertikal zentrieren */
   justify-content: space-between;
   gap: 1rem;
 }
@@ -42,12 +44,16 @@ function onChoose() {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  /* NEU: Verhindert, dass der Text den Button verdrängt */
+  min-width: 0; 
 }
 .dest-path {
   display: block;
-  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* NEU: Etwas hellere Farbe für bessere Lesbarkeit */
+  color: var(--text-color-secondary); 
+  font-size: 0.9rem;
 }
 </style>

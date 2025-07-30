@@ -2,6 +2,7 @@
   "duplicate": {
     "title": "Duplikate",
     "choose": "Ordner auswählen & scannen",
+    "scan": "Scannen",
     "scanning": "Scanne…",
     "deleteMarked": "Markierte löschen",
     "autoMark": "Automatisch markieren",
@@ -32,21 +33,18 @@
     "destination": "Ziel:",
     "devices": "Externe Geräte",
     "refresh": "Aktualisieren",
-    "copy": "Bilder kopieren"
+    "copy": "Bilder kopieren",
+    "no_devices_found": "Kein Geräte gefunden",
+    "connect_device_prompt": ""
   },
-  "sort": {
-    "title": "Sortieren",
-    "choose": "Ordner wählen",
-    "source": "Quelle:",
-    "start": "Bilder sortieren"
-  },
-  "blackhole": {
-    "title": "Schwarzes Loch",
-    "scan": "Scannen",
-    "disks": "Laufwerke",
-    "folders": "Ordner",
-    "copy": "Kopieren",
-    "cut": "Ausschneiden",
-    "files": "Dateien"
+  "home": {
+    "duplicate": {
+      "title": "Duplikate finden",
+      "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
+    },
+    "import": {
+      "title": "Bilder importieren",
+      "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
+    }
   }
 }

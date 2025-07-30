@@ -1,37 +1,120 @@
 <template>
   <div class="view">
-    <DestinationSelector
-      :path="settings.duplicateDestination"
-      :label="t('import.destination')"
-      :choose-text="t('import.choose')"
-      @choose="chooseDest"
-    />
-    <div class="mode-picker">
-      <label :title="t('duplicate.exactTooltip')">
-        <input type="checkbox" value="hash" v-model="modes" />
-        {{ t('duplicate.modes.exact') }}
-      </label>
-      <label :title="t('duplicate.perceptualTooltip')">
-        <input type="checkbox" value="dhash" v-model="modes" />
-        {{ t('duplicate.modes.perceptual') }}
-      </label>
-    </div>
-    <button
-      v-if="!busy"
-      class="btn"
-      @click="handleStartScan"
-      :disabled="!settings.duplicateDestination"
-    >
-      {{ busy ? t('duplicate.scanning') : t('blackhole.scan') }}
-    </button>
+    <!-- SECTION: Settings Card (Visible before scan) -->
+    <div v-if="!busy && !duplicates.length" class="settings-card">
+      <div class="card-header">
+        <h2 class="card-title">{{ t('duplicate.title') }}</h2>
+        <p class="card-subtitle">{{ t('duplicate.subtitle') }}</p>
+      </div>
 
+      <DestinationSelector
+        :path="settings.duplicateDestination"
+        :label="t('duplicate.destinationLabel')"
+        :choose-text="t('import.choose')"
+        @choose="chooseDest"
+      />
+
+      <div class="scan-options">
+        <h3 class="options-title">{{ t('duplicate.modes.title') }}</h3>
+        <div class="mode-picker">
+          <label
+            class="mode-option"
+            :class="{ selected: modes.includes('hash') }"
+          >
+            <input type="checkbox" value="hash" v-model="modes" />
+            <div class="icon-wrapper">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                ></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <div class="mode-text">
+              <span class="mode-name">{{ t('duplicate.modes.exact') }}</span>
+              <span class="mode-description">{{
+                t('duplicate.exactTooltip')
+              }}</span>
+            </div>
+          </label>
+          <label
+            class="mode-option"
+            :class="{ selected: modes.includes('dhash') }"
+          >
+            <input type="checkbox" value="dhash" v-model="modes" />
+            <div class="icon-wrapper">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+            <div class="mode-text">
+              <span class="mode-name">{{
+                t('duplicate.modes.perceptual')
+              }}</span>
+              <span class="mode-description">{{
+                t('duplicate.perceptualTooltip')
+              }}</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <details class="advanced-options">
+        <summary>{{ t('duplicate.advancedOptions') }}</summary>
+        <div class="advanced-content">
+          <label for="sensitivity">{{ t('duplicate.sensitivityLabel') }}</label>
+          <input
+            type="range"
+            id="sensitivity"
+            min="0"
+            max="16"
+            v-model="perceptualThreshold"
+          />
+          <span>{{ perceptualThreshold }}</span>
+          <small>{{ t('duplicate.sensitivityTooltip') }}</small>
+        </div>
+      </details>
+
+      <button
+        class="btn scan-button"
+        @click="handleStartScan"
+        :disabled="!settings.duplicateDestination || modes.length === 0"
+      >
+        {{ t('duplicate.scan') }}
+      </button>
+    </div>
+
+    <!-- SECTION: Scan Progress -->
     <div v-if="busy" class="scan-status">
       <HamsterLoader />
       <div class="status-text">
         <span v-if="progressInfo">
-          {{ progressInfo.processed }} / {{ progressInfo.total }} -
-          {{ formatElapsed(progressInfo.elapsed) }} -
-          {{ progressInfo.current }}
+          {{ progressInfo.processed }} / {{ progressInfo.total }} &mdash;
+          {{ formatElapsed(progressInfo.elapsed) }}
+          <br />
+          <span class="current-file">{{ progressInfo.current }}</span>
         </span>
         <span v-else>{{ Math.round(progress * 100) }}%</span>
         <button class="ghost cancel-button" @click="cancelScan">
@@ -40,38 +123,41 @@
       </div>
     </div>
 
-    <div v-if="duplicates.length" class="duplicate-list">
-      <div
-        v-for="d in duplicates"
-        :key="d.files[0].path"
-        class="duplicate-group"
-      >
-        <h3>
-          {{ tagText(d.method) }}
-          <small>{{ formatSize(d.files[0].size) }}</small>
-        </h3>
-        <DuplicateGroupCard
-          :group="d"
-          :marked="marked"
-          :delete-text="t('common.delete')"
-          :keep-text="t('common.keep')"
-          @decision="(path, v) => updateMarked(path, v as 'keep' | 'delete')"
-        />
+    <!-- SECTION: Results -->
+    <div v-if="duplicates.length && !busy" class="results-view">
+      <div class="results-header">
+        <h3>{{ t('duplicate.resultsTitle', { count: duplicates.length }) }}</h3>
+        <button class="ghost auto-mark-button" @click="autoMark">
+          {{ t('duplicate.autoMark') }}
+        </button>
+      </div>
+      <div class="duplicate-list">
+        <div
+          v-for="d in duplicates"
+          :key="d.files[0].path"
+          class="duplicate-group"
+        >
+          <h3>
+            {{ tagText(d.method) }}
+            <small>{{ formatSize(d.files[0].size) }}</small>
+          </h3>
+          <DuplicateGroupCard
+            :group="d"
+            :marked="marked"
+            @decision="(path, v) => updateMarked(path, v as 'keep' | 'delete')"
+          />
+        </div>
       </div>
     </div>
 
-    <div v-if="duplicates.length && !busy" class="auto-mark-bar">
-      <button class="ghost auto-mark-button" @click="autoMark">
-        {{ t('duplicate.autoMark') }}
-      </button>
-    </div>
-
+    <!-- SECTION: Floating Action Bars -->
     <div v-if="markedCount > 0" class="delete-bar">
       <button class="delete-button" @click="deleteMarked">
         {{ t('duplicate.deleteMarked', { count: markedCount }) }}
       </button>
     </div>
 
+    <!-- SECTION: Modals -->
     <DeleteConfirmModal
       :visible="showConfirm"
       :files="marked"
@@ -103,7 +189,7 @@ interface FileInfo {
   path: string;
   age: number;
   size: number;
-  preview: string; // The thumbnail is now directly included in the data
+  preview: string;
   hash?: string;
   dhash?: string;
 }
@@ -121,9 +207,6 @@ interface DuplicateProgress {
 }
 
 // --- Utility Functions ---
-/**
- * Formats a size in bytes into a human-readable string (KB, MB, GB).
- */
 function formatSize(bytes: number): string {
   if (bytes === 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -224,6 +307,7 @@ async function startScan(path: string, tags: string[]) {
   progress.value = 0;
   progressInfo.value = null;
   cancelled.value = false;
+  setDuplicates([]); // Clear previous results
 
   if (unlisten) unlisten();
   unlisten = await listen<DuplicateProgress>('duplicate_progress', (event) => {
@@ -235,6 +319,10 @@ async function startScan(path: string, tags: string[]) {
   });
 
   try {
+    // TODO: To make the sensitivity slider work, the `tags` parameter
+    // would need to be changed to send an object with the threshold,
+    // e.g., `[{ name: 'dhash', threshold: perceptualThreshold.value }]`
+    // This requires a corresponding change in the Rust command handler.
     const result = await invoke<{ groups: DuplicateGroup[] }>(
       'scan_folder_stream_multi',
       { path, tags },
@@ -244,6 +332,7 @@ async function startScan(path: string, tags: string[]) {
     }
   } catch (error) {
     console.error('Scan failed:', error);
+    // TODO: Show user-friendly error message
   } finally {
     busy.value = false;
     if (unlisten) {
@@ -274,6 +363,7 @@ onBeforeUnmount(() => {
 const { t } = useI18n();
 const settings = useSettingsStore();
 const modes = ref<string[]>(['hash', 'dhash']);
+const perceptualThreshold = ref(8); // For the advanced options slider
 
 async function chooseDest() {
   const selected = await open({ directory: true, multiple: false });
@@ -308,25 +398,155 @@ function tagText(tag: unknown): string {
 <style scoped>
 .view {
   padding: 1rem;
-  padding-bottom: 6rem; /* Add padding to avoid overlap with delete bar */
+  padding-bottom: 6rem; /* Space for delete bar */
 }
 
+/* --- Settings Card --- */
+.settings-card {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.card-header {
+  text-align: center;
+}
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.card-subtitle {
+  color: var(--text-color-muted);
+}
+.options-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-secondary);
+}
+.scan-button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* --- Mode Picker --- */
+.mode-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mode-option:hover {
+  border-color: var(--accent-color);
+  background: color-mix(in srgb, var(--accent-color), transparent 90%);
+}
+.mode-option.selected {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color), transparent 70%);
+}
+.mode-option input[type='checkbox'] {
+  display: none; /* Hide checkbox, we use the label as a button */
+}
+.icon-wrapper {
+  padding: 0.5rem;
+  background: var(--bg-color-secondary);
+  border-radius: 50%;
+  color: var(--accent-color);
+  display: grid;
+  place-items: center;
+}
+.mode-text {
+  display: flex;
+  flex-direction: column;
+}
+.mode-name {
+  font-weight: 600;
+}
+.mode-description {
+  font-size: 0.85rem;
+  color: var(--text-color-muted);
+}
+
+/* --- Advanced Options --- */
+.advanced-options summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+}
+.advanced-content {
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+.advanced-content small {
+  color: var(--text-color-muted);
+}
+
+/* --- Scan Status --- */
 .scan-status {
   text-align: center;
+  margin-top: 2rem;
+}
+.status-text {
+  margin-top: 1rem;
+  color: var(--text-color-secondary);
+}
+.current-file {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  word-break: break-all;
+  padding: 0 1rem;
+}
+.cancel-button {
+  margin-left: 0.5rem;
   margin-top: 1rem;
 }
 
-.status-text {
-  margin-top: 0.5rem;
-}
-
-.duplicate-list {
+/* --- Results View --- */
+.results-view {
   margin-top: 1.5rem;
+}
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.results-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.auto-mark-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+.duplicate-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
 }
-
 .duplicate-group h3 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
@@ -334,27 +554,17 @@ function tagText(tag: unknown): string {
   justify-content: space-between;
   align-items: baseline;
 }
-
 h3 small {
   font-size: 0.8rem;
   color: var(--text-color-muted);
 }
 
-.auto-mark-bar {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.auto-mark-button {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-}
-
+/* --- Delete Bar --- */
 .delete-bar {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0; /* Use right: 0 instead of width: 100% for better responsiveness */
+  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -363,7 +573,6 @@ h3 small {
   padding: 0.75rem;
   z-index: 10;
 }
-
 .delete-button {
   background: hsl(0, 70%, 50%);
   color: white;
@@ -374,25 +583,13 @@ h3 small {
   cursor: pointer;
   transition: background-color 0.2s;
 }
-
 .delete-button:hover {
   background: hsl(0, 80%, 60%);
-}
-
-.mode-picker {
-  margin-bottom: 1rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
 }
 
 button.ghost {
   background: transparent;
   color: var(--accent-color);
   border: 1px solid color-mix(in srgb, var(--accent-color), transparent 70%);
-}
-
-.cancel-button {
-  margin-left: 0.5rem;
 }
 </style>

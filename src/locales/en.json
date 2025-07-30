@@ -2,6 +2,7 @@
   "duplicate": {
     "title": "Duplicate",
     "choose": "Choose folder & scan",
+    "scan": "Scan",
     "scanning": "Scanning…",
     "deleteMarked": "Delete marked",
     "autoMark": "Auto mark",
@@ -32,21 +33,18 @@
     "destination": "Destination:",
     "devices": "External devices",
     "refresh": "Refresh",
-    "copy": "Copy images"
+    "copy": "Copy images",
+    "no_devices_found": "No Devices found",
+    "connect_device_prompt": ""
   },
-  "sort": {
-    "title": "Sort",
-    "choose": "Choose folder",
-    "source": "Source:",
-    "start": "Sort images"
-  },
-  "blackhole": {
-    "title": "Blackhole",
-    "scan": "Scan",
-    "disks": "Drives",
-    "folders": "Folders",
-    "copy": "Copy",
-    "cut": "Cut",
-    "files": "files"
+  "home": {
+    "duplicate": {
+      "title": "Duplikate finden",
+      "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
+    },
+    "import": {
+      "title": "Bilder importieren",
+      "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
+    }
   }
 }

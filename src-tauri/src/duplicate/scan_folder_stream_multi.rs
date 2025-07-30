@@ -3,7 +3,7 @@ use base64::{engine::general_purpose, Engine as _};
 use blake3;
 use dashmap::DashMap;
 use image::ImageFormat;
-// MODIFIED: Added JpegEncoder and ImageError to the import
+// CORRECTED: Added ImageError for better error handling in preview generation
 use image::{imageops::FilterType, DynamicImage, ImageError};
 use rayon::prelude::*;
 use serde::Serialize;
@@ -22,7 +22,8 @@ pub struct ScanConfig {
     pub methods: Vec<CompareMethod>,
 }
 
-#[derive(Clone, Serialize, PartialEq, Eq, Hash)]
+// FIXED: Added `Debug` to the derive macro to fix the compilation error.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 pub enum CompareMethod {
     ByteHash,
     PerceptualDHash { threshold: u32 },
@@ -46,7 +47,8 @@ pub struct FileInfo {
     pub size: u64,
     pub path: String,
     pub age: u64,
-    pub preview: Option<String>, // Feld für die Base64-Vorschau
+    // CORRECTED: This field now correctly receives the base64 preview string
+    pub preview: Option<String>,
 }
 
 #[derive(Serialize, Clone)]
@@ -66,8 +68,8 @@ struct FileMetaData {
     modified: SystemTime,
     byte_hash: Option<String>,
     perceptual_hash: Option<u64>,
-    // Vorschau wird für Duplikat-Suche nicht benötigt
-    generate_preview_base64: Option<String>,
+    // Field for the generated preview string
+    preview_base64: Option<String>,
 }
 
 // --- Hauptlogik ---
@@ -82,6 +84,7 @@ pub fn scan_folder_stream(window: Window, config: ScanConfig) -> Result<Duplicat
     let all_metadata: Vec<FileMetaData> = file_paths
         .into_par_iter()
         .filter_map(|path| {
+            // Process file and keep track of progress
             let meta = process_file_once(path.clone()).ok();
             let count = processed.fetch_add(1, Ordering::SeqCst) + 1;
             emit_progress(
@@ -104,12 +107,13 @@ pub fn scan_folder_stream(window: Window, config: ScanConfig) -> Result<Duplicat
                 find_duplicates_by_perceptual_hash(&all_metadata, *threshold)
             }
         };
+        // After each method, emit progress to show the user something is happening
         emit_progress(
             &window,
             start,
             processed.load(Ordering::SeqCst),
             total,
-            String::new(),
+            format!("Grouping by {:?}", method), // Provide context
         );
         groups.append(&mut matches);
     }
@@ -135,8 +139,8 @@ fn find_allowed_files(root: &Path) -> Vec<PathBuf> {
         .collect()
 }
 
-/// Verarbeitet eine einzelne Datei und extrahiert ALLE benötigten Metadaten,
-/// inklusive Hashes und der neuen Bildvorschau.
+/// Processes a single file to extract ALL necessary metadata,
+/// including hashes and the new image preview.
 fn process_file_once(path: PathBuf) -> Result<FileMetaData, std::io::Error> {
     let file = std::fs::File::open(&path)?;
     let metadata = file.metadata()?;
@@ -147,15 +151,17 @@ fn process_file_once(path: PathBuf) -> Result<FileMetaData, std::io::Error> {
     let mut reader = std::io::BufReader::new(file);
     reader.read_to_end(&mut buffer)?;
 
-    // 1. BLAKE3-Hash berechnen (immer)
+    // 1. Calculate BLAKE3 hash (always)
     let byte_hash = blake3::hash(&buffer).to_hex().to_string();
 
-    // 2. Perceptual Hash nur für Bilder berechnen
-    let (perceptual_hash, generate_preview_base64) = if let Ok(img) = image::load_from_memory(&buffer) {
+    // 2. Calculate perceptual hash and generate preview ONLY for valid images
+    //    FIX: This block now correctly generates and stores the preview.
+    let (perceptual_hash, preview_base64) = if let Ok(img) = image::load_from_memory(&buffer) {
         let p_hash = compute_dhash(&img).ok();
-        (p_hash, None)
+        let preview = generate_preview_base64(&img).ok(); // Actually generate the preview
+        (p_hash, preview) // Return both the hash and the preview string
     } else {
-        (None, None)
+        (None, None) // Not an image, so no p-hash or preview
     };
 
     Ok(FileMetaData {
@@ -164,11 +170,11 @@ fn process_file_once(path: PathBuf) -> Result<FileMetaData, std::io::Error> {
         modified,
         byte_hash: Some(byte_hash),
         perceptual_hash,
-        generate_preview_base64,
+        preview_base64, // Store the generated preview
     })
 }
 
-// --- Suchalgorithmen ---
+// --- Search Algorithms ---
 
 fn find_duplicates_by_byte_hash(metadata: &[FileMetaData]) -> Vec<MatchPair> {
     let size_map = DashMap::<u64, Vec<FileMetaData>>::new();
@@ -234,22 +240,22 @@ fn find_duplicates_by_perceptual_hash(metadata: &[FileMetaData], threshold: u32)
     duplicate_groups
 }
 
-// --- Hilfsfunktionen ---
+// --- Helper Functions ---
 
-/// CORRECTED: Generiert ein JPEG-Thumbnail mit spezifischer Qualität,
-/// kodiert es als Base64 und gibt es als String zurück.
+/// Generates a JPEG thumbnail with specific quality,
+/// encodes it as Base64, and returns it as a data URL string.
 fn generate_preview_base64(img: &DynamicImage) -> Result<String, ImageError> {
     let thumbnail = img.thumbnail(200, 200);
     let mut buffer = Cursor::new(Vec::new());
 
-    // Write the thumbnail directly to the buffer in WebP format.
+    // Write the thumbnail directly to the buffer in WebP format for better performance.
     thumbnail.write_to(&mut buffer, ImageFormat::WebP)?;
 
     let base64_string = general_purpose::STANDARD.encode(buffer.get_ref());
     Ok(format!("data:image/webp;base64,{}", base64_string))
 }
 
-/// MODIFIZIERT: Arbeitet jetzt mit einem bereits dekodierten Bild.
+/// Computes the dHash of a pre-decoded image.
 fn compute_dhash(img: &DynamicImage) -> Result<u64, String> {
     let luma_img = img.to_luma8();
     let width = 9;
@@ -270,12 +276,11 @@ fn compute_dhash(img: &DynamicImage) -> Result<u64, String> {
     Ok(bits)
 }
 
-
 fn hamming_distance(a: u64, b: u64) -> u32 {
     (a ^ b).count_ones()
 }
 
-/// MODIFIZIERT: Konvertiert die interne `FileMetaData` in die `FileInfo` für das Frontend.
+/// Converts the internal `FileMetaData` to the `FileInfo` struct for the frontend.
 fn to_file_info(entry: FileMetaData) -> FileInfo {
     let age = SystemTime::now()
         .duration_since(entry.modified)
@@ -290,7 +295,8 @@ fn to_file_info(entry: FileMetaData) -> FileInfo {
         size: entry.size,
         path: entry.path.display().to_string(),
         age,
-        preview: entry.generate_preview_base64, // Vorschau übergeben
+        // CORRECTED: Pass the generated preview to the frontend
+        preview: entry.preview_base64,
     }
 }
 

@@ -195,3 +195,42 @@ html {
   width: 0;
   transition: width 0.4s ease;
 }
+
+/*
+Transition options
+*/
+
+::view-transition-group(theme-toggle-no-freeze) {
+  animation: none;
+}
+
+::view-transition-old(root) {
+  animation: scale-down 0.7s linear(0, -0.007 8.3%, -0.04 14.3%, -0.11 20.2%, -0.309 32.1%, -0.333 35.2%, -0.324 37.8%, -0.293 39.7%, -0.241 41.5%, -0.065 44.8%, 0.198 47.7%, 0.97 54%, 1.18 57.1%, 1.298 60.5%, 1.331 63.2%, 1.326 66.2%, 1.278 70.1%, 1.107 80%, 1.048 84.8%, 1.009 91.2%, 1) forwards;
+}
+
+::view-transition-new(root) {
+  animation: scale-up 0.7s linear(0, -0.007 8.3%, -0.04 14.3%, -0.11 20.2%, -0.309 32.1%, -0.333 35.2%, -0.324 37.8%, -0.293 39.7%, -0.241 41.5%, -0.065 44.8%, 0.198 47.7%, 0.97 54%, 1.18 57.1%, 1.298 60.5%, 1.331 63.2%, 1.326 66.2%, 1.278 70.1%, 1.107 80%, 1.048 84.8%, 1.009 91.2%, 1) forwards;
+}
+
+/* Die Keyframes bleiben unverändert */
+@keyframes scale-down {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes scale-up {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

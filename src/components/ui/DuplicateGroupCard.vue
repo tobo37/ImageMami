@@ -47,8 +47,6 @@ interface DuplicateGroup {
 const props = defineProps<{
   group: DuplicateGroup;
   marked: string[];
-  deleteText: string;
-  keepText: string;
 }>();
 
 const emit = defineEmits<{ decision: [path: string, value: string] }>();

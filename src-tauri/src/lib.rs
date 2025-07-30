@@ -24,7 +24,6 @@ pub fn run() {
             duplicate::delete_files,
             duplicate::cancel_scan,
             importer::list_external_devices,
-            importer::list_all_disks,
             importer::import_device,
             importer::import_device_stream,
             blackhole::scan_blackhole_stream,

@@ -75,24 +75,37 @@ function handleFilesDropped(files: FileList) {
 </template>
 
 <style scoped>
-/* Scoped CSS für die Startseite */
+/* Hauptcontainer, der die ganze Seite strukturiert */
+.view {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Zentriert den gesamten Inhaltsblock vertikal */
+  align-items: center;     /* Zentriert den Inhaltsblock horizontal */
+  box-sizing: border-box;  /* Stellt sicher, dass Padding in der Höhe enthalten ist */
+  min-height: 90vh;        /* Nutzt den Großteil der Bildschirmhöhe */
+  padding: 2rem;
+}
+
 .welcome-title {
   text-align: center;
   font-size: 2.5rem;
   font-weight: 600;
-  margin-top: 2rem;
+  margin-top: 0; /* Margin wird vom Flex-Container gesteuert */
   margin-bottom: 0.5rem;
 }
+
 .welcome-subtitle {
   text-align: center;
   font-size: 1.2rem;
-  color: var(--color-text-soft); /* Beispiel für eine hellere Textfarbe */
+  color: var(--color-text-soft);
   margin-bottom: 3rem;
 }
+
 .grid-home {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
-  padding: 0 2rem;
+  width: 100%; /* Grid soll die volle Breite des zentrierten Bereichs nutzen */
+  max-width: 720px; /* Verhindert, dass die Karten auf sehr breiten Bildschirmen zu groß werden */
 }
 </style>

@@ -1,0 +1,59 @@
+{
+  "duplicate": {
+    "title": "Duplicate",
+    "choose": "Choose folder & scan",
+    "scan": "Scan",
+    "scanning": "Scanning…",
+    "deleteMarked": "Delete marked",
+    "autoMark": "Auto mark",
+    "confirmDelete": "Are you sure you want to delete {count} files?",
+    "dragDropInstruction": "Drag and drop",
+    "orClickToSelect": "or click",
+    "modes": {
+      "exact": "Exact",
+      "perceptual": "Perceptual",
+      "title": "Detection modes"
+    },
+    "tags": {
+      "hash": "Exact match",
+      "dhash": "Perceptual match"
+    },
+    "exactTooltip": "Only find files that are completely identical.",
+    "perceptualTooltip": "Also detect images that look the same even if the files are different.",
+    "subtitle": "Find duplicate images",
+    "destinationLabel": "Folder to scan:",
+    "resultsTitle": "{count} duplicate groups found",
+    "advancedOptions": "Advanced options",
+    "sensitivityLabel": "Sensitivity:",
+    "sensitivityTooltip": "Higher values find more differences"
+  },
+  "common": {
+    "keep": "keep",
+    "delete": "delete",
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel"
+  },
+  "import": {
+    "title": "Import",
+    "choose": "Choose destination",
+    "destination": "Destination:",
+    "devices": "External devices",
+    "refresh": "Refresh",
+    "copy": "Copy images",
+    "no_devices_found": "No Devices found",
+    "connect_device_prompt": "Please connect a device and click refresh."
+  },
+  "home": {
+    "title": "Welcome to Image Mami",
+    "subtitle": "What would you like to do?",
+    "duplicate": {
+      "title": "Find duplicates",
+      "description": "Scan folders to find duplicate images and free up space."
+    },
+    "import": {
+      "title": "Import images",
+      "description": "Add new images and organize your collection. You can also drag files here."
+    }
+  }
+}

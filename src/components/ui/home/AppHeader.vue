@@ -7,6 +7,13 @@ import { onClickOutside } from '@vueuse/core';
 // --- Assets ---
 import flagEn from '../../../assets/flag-en.svg?url';
 import flagDe from '../../../assets/flag-de.svg?url';
+import flagEs from '../../../assets/flag-es.svg?url';
+import flagZh from '../../../assets/flag-zh.svg?url';
+import flagFr from '../../../assets/flag-fr.svg?url';
+import flagPt from '../../../assets/flag-pt.svg?url';
+import flagJa from '../../../assets/flag-ja.svg?url';
+import flagHi from '../../../assets/flag-hi.svg?url';
+import flagRu from '../../../assets/flag-ru.svg?url';
 import ThemeToggle from './ThemeToggle.vue';
 
 // --- Refs und State ---
@@ -60,6 +67,13 @@ function goBack() {
 const languages = [
   { code: 'en', icon: flagEn, name: 'English' },
   { code: 'de', icon: flagDe, name: 'Deutsch' },
+  { code: 'es', icon: flagEs, name: 'Español' },
+  { code: 'zh', icon: flagZh, name: '中文' },
+  { code: 'fr', icon: flagFr, name: 'Français' },
+  { code: 'pt', icon: flagPt, name: 'Português' },
+  { code: 'ja', icon: flagJa, name: '日本語' },
+  { code: 'hi', icon: flagHi, name: 'हिन्दी' },
+  { code: 'ru', icon: flagRu, name: 'Русский' },
 ];
 
 const currentLang = computed(
@@ -111,7 +125,11 @@ onClickOutside(langSelectElement, () => (isLangOpen.value = false));
     </div>
 
     <div class="header-right">
-      <ThemeToggle :theme="theme" @toggle="toggleTheme" :size="15"></ThemeToggle>
+      <ThemeToggle
+        :theme="theme"
+        @toggle="toggleTheme"
+        :size="15"
+      ></ThemeToggle>
       <div class="lang-select" ref="langSelectElement">
         <button
           @click="isLangOpen = !isLangOpen"

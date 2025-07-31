@@ -8,7 +8,9 @@ ImageMami helps you import, organize and deduplicate your photos on Linux. The p
 - Sort photos into folders
 - Detect duplicates using exact or perceptual hashing
 
-![Screenshot placeholder](docs/images/screenshot-main.png)
+![Screenshot Home](docs/images/screenshot-home.png)
+![Screenshot duplicate](docs/images/screenshot_duplicate.png)
+![Screenshot import](docs/images/screenshot_import.png)
 
 ## For developers
 

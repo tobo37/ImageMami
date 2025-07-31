@@ -1,59 +1,59 @@
 {
   "duplicate": {
-    "title": "Duplicate",
-    "choose": "Choose folder & scan",
-    "scan": "Scan",
-    "scanning": "Scanning…",
-    "deleteMarked": "Delete marked",
-    "autoMark": "Auto mark",
-    "confirmDelete": "Are you sure you want to delete {count} files?",
-    "dragDropInstruction": "Drag and drop",
-    "orClickToSelect": "or click",
+    "title": "Duplicados",
+    "choose": "Escolha a pasta e escaneie",
+    "scan": "Escanear",
+    "scanning": "Escaneando…",
+    "deleteMarked": "Excluir marcados",
+    "autoMark": "Marcar automaticamente",
+    "confirmDelete": "Tem certeza de que deseja excluir {count} arquivos?",
+    "dragDropInstruction": "Arrastar e soltar",
+    "orClickToSelect": "ou clique",
     "modes": {
-      "exact": "Exact",
+      "exact": "Exato",
       "perceptual": "Perceptual",
-      "title": "Detection modes"
+      "title": "Modos de detec\u00e7\u00e3o"
     },
     "tags": {
-      "hash": "Exact match",
-      "dhash": "Perceptual match"
+      "hash": "Correspond\u00eancia exata",
+      "dhash": "Correspond\u00eancia perceptual"
     },
-    "exactTooltip": "Only find files that are completely identical.",
-    "perceptualTooltip": "Also detect images that look the same even if the files are different.",
-    "subtitle": "Find duplicate images",
-    "destinationLabel": "Folder to scan:",
-    "resultsTitle": "{count} duplicate groups found",
-    "advancedOptions": "Advanced options",
-    "sensitivityLabel": "Sensitivity:",
-    "sensitivityTooltip": "Higher values find more differences"
+    "exactTooltip": "Encontrar apenas arquivos completamente id\u00eanticos.",
+    "perceptualTooltip": "Tamb\u00e9m detecta imagens que parecem iguais mesmo que os arquivos sejam diferentes.",
+    "subtitle": "Encontrar imagens duplicadas",
+    "destinationLabel": "Pasta para escanear:",
+    "resultsTitle": "{count} grupos duplicados encontrados",
+    "advancedOptions": "Op\u00e7\u00f5es avan\u00e7adas",
+    "sensitivityLabel": "Sensibilidade:",
+    "sensitivityTooltip": "Valores mais altos detectam mais diferen\u00e7as"
   },
   "common": {
-    "keep": "keep",
-    "delete": "delete",
-    "yes": "Yes",
-    "no": "No",
-    "cancel": "Cancel"
+    "keep": "manter",
+    "delete": "excluir",
+    "yes": "Sim",
+    "no": "N\u00e3o",
+    "cancel": "Cancelar"
   },
   "import": {
-    "title": "Import",
-    "choose": "Choose destination",
-    "destination": "Destination:",
-    "devices": "External devices",
-    "refresh": "Refresh",
-    "copy": "Copy images",
-    "no_devices_found": "No Devices found",
-    "connect_device_prompt": "Please connect a device and click refresh."
+    "title": "Importar",
+    "choose": "Escolher destino",
+    "destination": "Destino:",
+    "devices": "Dispositivos externos",
+    "refresh": "Atualizar",
+    "copy": "Copiar imagens",
+    "no_devices_found": "Nenhum dispositivo encontrado",
+    "connect_device_prompt": "Conecte um dispositivo e clique em atualizar."
   },
   "home": {
-    "title": "Welcome to Image Mami",
-    "subtitle": "What would you like to do?",
+    "title": "Bem-vindo ao Image Mami",
+    "subtitle": "O que voc\u00ea gostaria de fazer?",
     "duplicate": {
-      "title": "Find duplicates",
-      "description": "Scan folders to find duplicate images and free up space."
+      "title": "Encontrar duplicados",
+      "description": "Escaneie pastas para encontrar imagens duplicadas e liberar espa\u00e7o."
     },
     "import": {
-      "title": "Import images",
-      "description": "Add new images and organize your collection. You can also drag files here."
+      "title": "Importar imagens",
+      "description": "Adicione novas imagens e organize sua cole\u00e7\u00e3o. Voc\u00ea tamb\u00e9m pode arrastar arquivos aqui."
     }
   }
 }

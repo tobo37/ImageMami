@@ -10,7 +10,7 @@ import flagDe from '../../../assets/flag-de.svg?url';
 import ThemeToggle from './ThemeToggle.vue';
 
 // --- Refs und State ---
-const theme = ref<'light' | 'dark'>('light');
+const theme = ref<'light' | 'dark'>('dark');
 const isLangOpen = ref(false);
 const langSelectElement = ref<HTMLDivElement | null>(null);
 

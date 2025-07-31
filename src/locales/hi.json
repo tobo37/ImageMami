@@ -1,59 +1,59 @@
 {
   "duplicate": {
-    "title": "Duplicate",
-    "choose": "Choose folder & scan",
-    "scan": "Scan",
-    "scanning": "Scanning…",
-    "deleteMarked": "Delete marked",
-    "autoMark": "Auto mark",
-    "confirmDelete": "Are you sure you want to delete {count} files?",
-    "dragDropInstruction": "Drag and drop",
-    "orClickToSelect": "or click",
+    "title": "\u0921\u0941\u092a\u094d\u0932\u093f\u0915\u0947\u091f",
+    "choose": "\u092b\u093c\u094b\u0932\u094d\u0921\u0930 \u091a\u0941\u0928\u0947\u0902 \u0914\u0930 \u0938\u094d\u0915\u0948\u0928 \u0915\u0930\u0947\u0902",
+    "scan": "\u0938\u094d\u0915\u0948\u0928",
+    "scanning": "\u0938\u094d\u0915\u0948\u0928 \u0915\u0930 \u0930\u0939\u093e \u0939\u0948\u2026",
+    "deleteMarked": "\u091a\u093f\u0939\u094d\u0928\u093f\u0924 \u0939\u091f\u093e\u090f\u0902",
+    "autoMark": "\u0938\u094d\u0935\u0924\u0903 \u091a\u093f\u0939\u094d\u0928\u093f\u0924",
+    "confirmDelete": "\u0915\u094d\u092f\u093e \u0906\u092a \u0935\u093e\u0915\u0907 \u0938\u091a\u094d\u091a \u0915\u0930\u0928\u093e \u091a\u093e\u0939\u0924\u0947 \u0939\u0948\u0902 {count} \u092b\u093c\u093e\u0907\u0932\u0947\u0902?",
+    "dragDropInstruction": "\u0916\u0940\u0902\u091a\u0947\u0902 \u0914\u0930 \u091b\u094b\u0921\u0947\u0902",
+    "orClickToSelect": "\u092f\u093e \u0915\u094d\u0932\u093f\u0915 \u0915\u0930\u0947\u0902",
     "modes": {
-      "exact": "Exact",
-      "perceptual": "Perceptual",
-      "title": "Detection modes"
+      "exact": "\u0938\u091f\u0940\u0915",
+      "perceptual": "\u092a\u0930\u0938\u0947\u092a\u094d\u091a\u0941\u0905\u0932",
+      "title": "\u0921\u093f\u091f\u0947\u0915\u094d\u0936\u0928 \u092e\u094b\u0921"
     },
     "tags": {
-      "hash": "Exact match",
-      "dhash": "Perceptual match"
+      "hash": "\u0938\u091f\u0940\u0915 \u092e\u0947\u0932",
+      "dhash": "\u092a\u0930\u0938\u0947\u092a\u094d\u091a\u0941\u0905\u0932 \u092e\u0947\u0932"
     },
-    "exactTooltip": "Only find files that are completely identical.",
-    "perceptualTooltip": "Also detect images that look the same even if the files are different.",
-    "subtitle": "Find duplicate images",
-    "destinationLabel": "Folder to scan:",
-    "resultsTitle": "{count} duplicate groups found",
-    "advancedOptions": "Advanced options",
-    "sensitivityLabel": "Sensitivity:",
-    "sensitivityTooltip": "Higher values find more differences"
+    "exactTooltip": "\u0915\u0947\u0935\u0932 \u0935\u0939\u0940 \u092b\u093c\u093e\u0907\u0932\u0947\u0902 \u0922\u0942\u0902\u0922\u0947\u0902 \u091c\u094b \u092a\u0942\u0930\u094d\u0923\u0924\u092f\u093e \u0938\u0939\u0940 \u0939\u094b\u0902।",
+    "perceptualTooltip": "\u092f\u0926\u093f \u092b\u093c\u093e\u0907\u0932\u0947\u0902 \u0905\u0932\u0917 \u0939\u094b\u0902 \u0924\u094b \u092d\u0940 \u090f\u0915 \u091c\u0948\u0938\u0940 \u0926\u093f\u0916\u0928\u0947 \u0935\u093e\u0932\u0940 \u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u0922\u0942\u0902\u0921\u0947\u0902।",
+    "subtitle": "\u0921\u0941\u092a\u094d\u0932\u093f\u0915\u0947\u091f \u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u0916\u094b\u091c\u0947\u0902",
+    "destinationLabel": "\u0938\u094d\u0915\u0948\u0928 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092b\u093c\u094b\u0932\u094d\u0921\u0930:",
+    "resultsTitle": "{count} \u0921\u0941\u092a\u094d\u0932\u093f\u0915\u0947\u091f \u0917\u094d\u0930\u0942\u092a \u092e\u093f\u0932\u0947",
+    "advancedOptions": "\u0909\u0928\u094d\u0928\u0924 \u0935\u093f\u0915\u0932\u094d\u092a",
+    "sensitivityLabel": "\u0938\u0902\u0935\u0947\u0926\u0928\u0940\u0924\u093e:",
+    "sensitivityTooltip": "\u0905\u0927\u093f\u0915 \u092e\u093e\u0928 \u091c\u093c\u094d\u092f\u093e\u0926\u093e \u0905\u0927\u093f\u0915 \u0905\u0902\u0924\u0930 \u0922\u0942\u0902\u0921\u0924\u0947 \u0939\u0948\u0902"
   },
   "common": {
-    "keep": "keep",
-    "delete": "delete",
-    "yes": "Yes",
-    "no": "No",
-    "cancel": "Cancel"
+    "keep": "\u0930\u0916\u0947\u0902",
+    "delete": "\u0939\u091f\u093e\u090f\u0902",
+    "yes": "\u0939\u093e\u0901",
+    "no": "\u0928\u0939\u0940\u0902",
+    "cancel": "\u0930\u0926\u094d\u0926 \u0915\u0930\u0947\u0902"
   },
   "import": {
-    "title": "Import",
-    "choose": "Choose destination",
-    "destination": "Destination:",
-    "devices": "External devices",
-    "refresh": "Refresh",
-    "copy": "Copy images",
-    "no_devices_found": "No Devices found",
-    "connect_device_prompt": "Please connect a device and click refresh."
+    "title": "\u0906\u092f\u093e\u0924",
+    "choose": "\u0917\u0902\u0924\u0935\u094d\u092f \u091a\u0941\u0928\u0947\u0902",
+    "destination": "\u0917\u0902\u0924\u0935\u094d\u092f:",
+    "devices": "\u092c\u093e\u0939\u0930\u0940 \u0921\u093f\u0935\u093e\u0907\u0938",
+    "refresh": "\u0930\u093f\u092b\u093c\u094d\u0930\u0947\u0936",
+    "copy": "\u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u0915\u093e\u092a\u0940 \u0915\u0930\u0947\u0902",
+    "no_devices_found": "\u0915\u094b\u0908 \u0921\u093f\u0935\u093e\u0907\u0938 \u0928\u0939\u0940\u0902 \u092e\u093f\u0932\u093e",
+    "connect_device_prompt": "\u0915\u0943\u092a\u092f\u093e \u0915\u094b\u0908 \u0921\u093f\u0935\u093e\u0907\u0938 \u091c\u094b\u095c\u0947\u0902 \u0914\u0930 \u0930\u093f\u092b\u093c\u094d\u0930\u0947\u0936 \u092a\u0930 \u0915\u094d\u0932\u093f\u0915 \u0915\u0930\u0947\u0902।"
   },
   "home": {
-    "title": "Welcome to Image Mami",
-    "subtitle": "What would you like to do?",
+    "title": "Image Mami \u092e\u0947\u0902 \u0906\u092a\u0915\u093e \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948",
+    "subtitle": "\u0906\u092a \u0915\u094d\u092f\u093e \u0915\u0930\u0928\u093e \u091a\u093e\u0939\u0947\u0902?",
     "duplicate": {
-      "title": "Find duplicates",
-      "description": "Scan folders to find duplicate images and free up space."
+      "title": "\u0921\u0941\u092a\u094d\u0932\u093f\u0915\u0947\u091f \u0916\u094b\u091c\u0947\u0902",
+      "description": "\u091c\u0917\u0939 \u0916\u093e\u0932\u0940 \u0915\u0930\u0928\u0947 \u0914\u0930 \u0921\u0941\u092a\u094d\u0932\u093f\u0915\u0947\u091f \u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u0916\u094b\u091c\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092b\u093c\u094b\u0932\u094d\u0921\u0930 \u0938\u094d\u0915\u0948\u0928 \u0915\u0930\u0947\u0902।"
     },
     "import": {
-      "title": "Import images",
-      "description": "Add new images and organize your collection. You can also drag files here."
+      "title": "\u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u0906\u092f\u093e\u0924 \u0915\u0930\u0947\u0902",
+      "description": "\u0928\u0908 \u0924\u0938\u094d\u0935\u0940\u0930\u0947\u0902 \u091c\u094b\u095c\u0947\u0902 \u0914\u0930 \u0905\u092a\u0928\u0940 \u0938\u0902\u0917\u094d\u0930\u0939 \u0938\u0902\u0917\u0920\u093f\u0924 \u0915\u0930\u0947\u0902। \u0906\u092a \u092f\u0939\u093e\u0902 \u092b\u093c\u093e\u0907\u0932\u0947\u0902 \u0916\u0940\u0902\u091a \u092d\u0940 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902।"
     }
   }
 }

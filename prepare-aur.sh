@@ -63,7 +63,7 @@ cat << EOF > "${AUR_DIR}/PKGBUILD"
 pkgname=${PKG_NAME}
 pkgver=${PKG_VER}
 pkgrel=1
-pkgdesc="ImageMami helps you import, organize and deduplicate your photos on Linux. Based on Tauri"
+pkgdesc="ImageMami helps you import, organize and deduplicate your photos. Tauri GUI"
 arch=('x86_64')
 url="https://github.com/${GH_REPO}"
 license=('MIT')

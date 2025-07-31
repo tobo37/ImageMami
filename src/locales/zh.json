@@ -1,59 +1,59 @@
 {
   "duplicate": {
-    "title": "Duplicate",
-    "choose": "Choose folder & scan",
-    "scan": "Scan",
-    "scanning": "Scanning…",
-    "deleteMarked": "Delete marked",
-    "autoMark": "Auto mark",
-    "confirmDelete": "Are you sure you want to delete {count} files?",
-    "dragDropInstruction": "Drag and drop",
-    "orClickToSelect": "or click",
+    "title": "\u91cd\u590d\u6587\u4ef6",
+    "choose": "\u9009\u62e9\u6587\u4ef6\u5939\u5e76\u626b\u63cf",
+    "scan": "\u626b\u63cf",
+    "scanning": "\u6b63\u5728\u626b\u63cf…",
+    "deleteMarked": "\u5220\u9664\u5df2\u6807\u8bb0",
+    "autoMark": "\u81ea\u52a8\u6807\u8bb0",
+    "confirmDelete": "\u786e\u5b9a\u8981\u5220\u9664 {count} \u4e2a\u6587\u4ef6\u5417\uff1f",
+    "dragDropInstruction": "\u62d6\u62fd",
+    "orClickToSelect": "\u6216\u70b9\u51fb",
     "modes": {
-      "exact": "Exact",
-      "perceptual": "Perceptual",
-      "title": "Detection modes"
+      "exact": "\u7cbe\u786e",
+      "perceptual": "\u611f\u77e5",
+      "title": "\u68c0\u6d4b\u6a21\u5f0f"
     },
     "tags": {
-      "hash": "Exact match",
-      "dhash": "Perceptual match"
+      "hash": "\u7cbe\u786e\u5339\u914d",
+      "dhash": "\u611f\u77e5\u5339\u914d"
     },
-    "exactTooltip": "Only find files that are completely identical.",
-    "perceptualTooltip": "Also detect images that look the same even if the files are different.",
-    "subtitle": "Find duplicate images",
-    "destinationLabel": "Folder to scan:",
-    "resultsTitle": "{count} duplicate groups found",
-    "advancedOptions": "Advanced options",
-    "sensitivityLabel": "Sensitivity:",
-    "sensitivityTooltip": "Higher values find more differences"
+    "exactTooltip": "\u4ec5\u67e5\u627e\u5b8c\u5168\u76f8\u540c\u7684\u6587\u4ef6\u3002",
+    "perceptualTooltip": "\u5373\u4f7f\u6587\u4ef6\u4e0d\u540c\u4e5f\u68c0\u6d4b\u770b\u8d77\u6765\u76f8\u540c\u7684\u56fe\u50cf\u3002",
+    "subtitle": "\u67e5\u627e\u91cd\u590d\u56fe\u7247",
+    "destinationLabel": "\u626b\u63cf\u6587\u4ef6\u5939\uff1a",
+    "resultsTitle": "\u627e\u5230 {count} \u4e2a\u91cd\u590d\u7ec4",
+    "advancedOptions": "\u9ad8\u7ea7\u9009\u9879",
+    "sensitivityLabel": "\u7075\u654f\u5ea6\uff1a",
+    "sensitivityTooltip": "\u503c\u8d8a\u9ad8\u53d1\u73b0\u7684\u5dee\u5f02\u8d8a\u591a"
   },
   "common": {
-    "keep": "keep",
-    "delete": "delete",
-    "yes": "Yes",
-    "no": "No",
-    "cancel": "Cancel"
+    "keep": "\u4fdd\u7559",
+    "delete": "\u5220\u9664",
+    "yes": "\u662f",
+    "no": "\u5426",
+    "cancel": "\u53d6\u6d88"
   },
   "import": {
-    "title": "Import",
-    "choose": "Choose destination",
-    "destination": "Destination:",
-    "devices": "External devices",
-    "refresh": "Refresh",
-    "copy": "Copy images",
-    "no_devices_found": "No Devices found",
-    "connect_device_prompt": "Please connect a device and click refresh."
+    "title": "\u5bfc\u5165",
+    "choose": "\u9009\u62e9\u76ee\u6807\u4f4d\u7f6e",
+    "destination": "\u76ee\u6807\uff1a",
+    "devices": "\u5916\u90e8\u8bbe\u5907",
+    "refresh": "\u5237\u65b0",
+    "copy": "\u590d\u5236\u56fe\u7247",
+    "no_devices_found": "\u672a\u627e\u5230\u8bbe\u5907",
+    "connect_device_prompt": "\u8bf7\u8fde\u63a5\u8bbe\u5907\u5e76\u70b9\u51fb\u5237\u65b0\u3002"
   },
   "home": {
-    "title": "Welcome to Image Mami",
-    "subtitle": "What would you like to do?",
+    "title": "\u6b22\u8fce\u4f7f\u7528 Image Mami",
+    "subtitle": "\u4f60\u60f3\u505a\u4ec0\u4e48\uff1f",
     "duplicate": {
-      "title": "Find duplicates",
-      "description": "Scan folders to find duplicate images and free up space."
+      "title": "\u67e5\u627e\u91cd\u590d\u9879",
+      "description": "\u626b\u63cf\u6587\u4ef6\u5939\u4ee5\u627e\u5230\u91cd\u590d\u56fe\u7247\u5e76\u91ca\u653e\u7a7a\u95f4\u3002"
     },
     "import": {
-      "title": "Import images",
-      "description": "Add new images and organize your collection. You can also drag files here."
+      "title": "\u5bfc\u5165\u56fe\u7247",
+      "description": "\u6dfb\u52a0\u65b0\u56fe\u7247\u5e76\u6574\u7406\u60a8\u7684\u6536\u85cf\u3002\u60a8\u4e5f\u53ef\u4ee5\u5c06\u6587\u4ef6\u62d6\u5230\u6b64\u5904\u3002"
     }
   }
 }

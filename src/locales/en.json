@@ -45,6 +45,8 @@
     "connect_device_prompt": "Please connect a device and click refresh."
   },
   "home": {
+    "title": "Welcome to Image Mami",
+    "subtitle": "What would you like to do?",
     "duplicate": {
       "title": "Find duplicates",
       "description": "Scan folders to find duplicate images and free up space."

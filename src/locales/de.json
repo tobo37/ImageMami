@@ -45,6 +45,8 @@
     "connect_device_prompt": "Bitte ein Gerät verbinden und auf Aktualisieren klicken."
   },
   "home": {
+    "title": "Willkommen bei Image Mami",
+    "subtitle": "Was möchten Sie tun?",
     "duplicate": {
       "title": "Duplikate finden",
       "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."

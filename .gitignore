@@ -4,3 +4,4 @@ package-lock.json
 tests/assets/delete
 tests/assets/duplications/*.ARW
 bun.lock
+imagemami/*

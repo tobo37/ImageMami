@@ -11,14 +11,21 @@
     "orClickToSelect": "or click",
     "modes": {
       "exact": "Exact",
-      "perceptual": "Perceptual"
+      "perceptual": "Perceptual",
+      "title": "Detection modes"
     },
     "tags": {
       "hash": "Exact match",
       "dhash": "Perceptual match"
     },
     "exactTooltip": "Only find files that are completely identical.",
-    "perceptualTooltip": "Also detect images that look the same even if the files are different."
+    "perceptualTooltip": "Also detect images that look the same even if the files are different.",
+    "subtitle": "Find duplicate images",
+    "destinationLabel": "Folder to scan:",
+    "resultsTitle": "{count} duplicate groups found",
+    "advancedOptions": "Advanced options",
+    "sensitivityLabel": "Sensitivity:",
+    "sensitivityTooltip": "Higher values find more differences"
   },
   "common": {
     "keep": "keep",
@@ -35,16 +42,16 @@
     "refresh": "Refresh",
     "copy": "Copy images",
     "no_devices_found": "No Devices found",
-    "connect_device_prompt": ""
+    "connect_device_prompt": "Please connect a device and click refresh."
   },
   "home": {
     "duplicate": {
-      "title": "Duplikate finden",
-      "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."
+      "title": "Find duplicates",
+      "description": "Scan folders to find duplicate images and free up space."
     },
     "import": {
-      "title": "Bilder importieren",
-      "description": "Fügen Sie neue Bilder hinzu und organisieren Sie Ihre Sammlung. Sie können Dateien auch hierher ziehen."
+      "title": "Import images",
+      "description": "Add new images and organize your collection. You can also drag files here."
     }
   }
 }

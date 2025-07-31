@@ -50,7 +50,7 @@ function onDrop(event: DragEvent) {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2.5rem 2rem;
+  padding: 2rem 2rem 2.5rem 2rem;
   background-color: var(
     --color-background-soft
   ); /* Beispiel: Etwas hellerer Hintergrund */

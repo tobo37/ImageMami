@@ -11,14 +11,21 @@
     "orClickToSelect": "oder klicke hier, um einen Ordner auszuwählen",
     "modes": {
       "exact": "Exakt",
-      "perceptual": "Perzeptuell"
+      "perceptual": "Perzeptuell",
+      "title": "Erkennungsmodi"
     },
     "tags": {
       "hash": "Absolut identisch",
       "dhash": "Ähnlich"
     },
     "exactTooltip": "Findet nur Dateien, die komplett identisch sind.",
-    "perceptualTooltip": "Findet auch Bilder, die sich ähnlich sehen, selbst wenn die Dateien unterschiedlich sind."
+    "perceptualTooltip": "Findet auch Bilder, die sich ähnlich sehen, selbst wenn die Dateien unterschiedlich sind.",
+    "subtitle": "Doppelte Bilder finden",
+    "destinationLabel": "Zu scannender Ordner:",
+    "resultsTitle": "{count} Duplikatgruppen gefunden",
+    "advancedOptions": "Erweiterte Optionen",
+    "sensitivityLabel": "Empfindlichkeit:",
+    "sensitivityTooltip": "Höhere Werte finden mehr Unterschiede"
   },
   "common": {
     "keep": "Behalten",
@@ -34,10 +41,12 @@
     "devices": "Externe Geräte",
     "refresh": "Aktualisieren",
     "copy": "Bilder kopieren",
-    "no_devices_found": "Kein Geräte gefunden",
-    "connect_device_prompt": ""
+    "no_devices_found": "Kein Gerät gefunden",
+    "connect_device_prompt": "Bitte ein Gerät verbinden und auf Aktualisieren klicken."
   },
   "home": {
+    "title": "Willkommen bei Image Mami",
+    "subtitle": "Was möchten Sie tun?",
     "duplicate": {
       "title": "Duplikate finden",
       "description": "Scannen Sie Ordner, um doppelte Bilder zu finden und Speicherplatz freizugeben."

@@ -13,8 +13,8 @@ function handleFilesDropped(files: FileList) {
 
 <template>
   <div class="view">
-    <h1 class="welcome-title">Willkommen bei Image Mami</h1>
-    <p class="welcome-subtitle">Was möchten Sie tun?</p>
+    <h1 class="welcome-title">{{t('home.title')}}</h1>
+    <p class="welcome-subtitle">{{t('home.subtitle')}}</p>
 
     <div class="grid-home">
       <HomeCard
